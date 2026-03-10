@@ -1,3 +1,4 @@
+import { CATALOG_TAB_NAME } from "../../features/catalog/Catalog.constant";
 import { DEVICES_TAB_NAME } from "../../features/devices/Devices.constant";
 import { EMPLOYEES_TAB_NAME } from "../../features/employees/Employees.constant";
 
@@ -21,6 +22,15 @@ function AppControls({ activeTab, onRefresh, onTabChange }) {
         type="button"
       >
         Devices
+      </button>
+      <button
+        className={
+          activeTab === CATALOG_TAB_NAME ? "tab-button active" : "tab-button"
+        }
+        onClick={() => onTabChange(CATALOG_TAB_NAME)}
+        type="button"
+      >
+        Catalog
       </button>
       <button type="button" onClick={onRefresh}>
         Manual refresh

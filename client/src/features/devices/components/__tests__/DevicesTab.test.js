@@ -76,6 +76,34 @@ describe("DevicesTab - owner resolution feature", () => {
     expect(screen.getAllByRole("cell", { name: "Bob" }).length).toBe(2);
   });
 
+  it("shows resolving labels while owner names are being fetched", async () => {
+    getEmployeesByIds.mockImplementation(
+      () => new Promise(() => undefined),
+    );
+
+    setupDevicesTab({
+      devices: [
+        {
+          id: 10,
+          name: "MacBook Pro",
+          type: LAPTOP,
+          owner_id: 1,
+        },
+        {
+          id: 11,
+          name: "Desk Phone",
+          type: MOBILE,
+          owner_id: null,
+        },
+      ],
+    });
+
+    await waitFor(() => {
+      expect(screen.getByRole("cell", { name: "resolving..." })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("cell", { name: "Unassigned" })).toBeInTheDocument();
+  });
+
   it("falls back to unknown owner label on lookup failure", async () => {
     getEmployeesByIds.mockRejectedValue(new Error("lookup failed"));
 

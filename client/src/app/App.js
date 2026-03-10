@@ -10,6 +10,8 @@ import EmployeesTab from "../features/employees/components/EmployeesTab";
 import DevicesTab from "../features/devices/components/DevicesTab";
 import { EMPLOYEES_TAB_NAME } from "../features/employees/Employees.constant";
 import { DEVICES_TAB_NAME } from "../features/devices/Devices.constant";
+import CatalogTab from "../features/catalog/components/CatalogTab";
+import { CATALOG_TAB_NAME } from "../features/catalog/Catalog.constant";
 
 function App() {
   const { activeTab, setActiveTab } = useActiveTab();
@@ -69,6 +71,8 @@ function App() {
             onError={appendError}
           />
         ) : null}
+
+        {activeTab === CATALOG_TAB_NAME ? <CatalogTab /> : null}
       </main>
     </div>
   );

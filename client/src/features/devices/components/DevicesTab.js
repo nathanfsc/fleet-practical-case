@@ -44,6 +44,21 @@ function DevicesTab({
     resetDeviceForm,
   });
 
+  function getOwnerLabel(device) {
+    const ownerId = String(device.owner_id || "");
+    const resolvedOwnerName = ownerNameById[ownerId];
+
+    if (resolvedOwnerName) {
+      return resolvedOwnerName;
+    }
+
+    if (loadingOwnerNames && device.owner_id) {
+      return "resolving...";
+    }
+
+    return "Unassigned";
+  }
+
   return (
     <section className="panel">
       <h2>{isEditing ? "Edit device" : "Create device"}</h2>
@@ -167,7 +182,7 @@ function DevicesTab({
             <tr key={device.id}>
               <td>{device.name}</td>
               <td>{device.type}</td>
-              <td>{ownerNameById[String(device.owner_id)] || "Unassigned"}</td>
+              <td>{getOwnerLabel(device)}</td>
               <td>
                 <button type="button" onClick={() => beginDeviceEdit(device)}>
                   Edit
