@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { EMPLOYEE_ROLE_OPTIONS } from "./EmployeesTab.constant";
+import { EMPLOYEE_ROLE_OPTIONS } from "../Employees.constant";
 
 const DEFAULT_EMPLOYEE_FORM = { name: "", role: "" };
 
