@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEmployeeById } from "../../employees/services/employeesService";
+import { getEmployeesByIds } from "../../employees/services/employeesService";
 
 export function useDeviceOwnerNames(filteredDevices) {
   const [ownerNameById, setOwnerNameById] = useState({});
@@ -26,39 +26,38 @@ export function useDeviceOwnerNames(filteredDevices) {
 
     setLoadingOwnerNames(true);
 
-    Promise.all(
-      ownerIdsToFetch.map(async (ownerId) => {
-        try {
-          const employee = await getEmployeeById(ownerId);
-
-          if (!employee) {
-            return {
-              ownerId: String(ownerId),
-              ownerName: `Unknown employee #${ownerId}`,
-            };
-          }
-
-          return {
-            ownerId: String(ownerId),
-            ownerName: employee.name,
-          };
-        } catch (error) {
-          return {
-            ownerId: String(ownerId),
-            ownerName: `Unknown employee #${ownerId}`,
-          };
-        }
-      }),
-    )
-      .then((resolvedOwners) => {
+    getEmployeesByIds(ownerIdsToFetch)
+      .then((employees) => {
         if (!isActive) {
           return;
         }
 
         const ownerMap = {};
-        resolvedOwners.forEach((owner) => {
-          ownerMap[owner.ownerId] = owner.ownerName;
+
+        ownerIdsToFetch.forEach((ownerId) => {
+          ownerMap[String(ownerId)] = `Unknown employee #${ownerId}`;
         });
+
+        employees.forEach((employee) => {
+          ownerMap[String(employee.id)] = employee.name;
+        });
+
+        setOwnerNameById((prev) => ({
+          ...prev,
+          ...ownerMap,
+        }));
+      })
+      .catch(() => {
+        if (!isActive) {
+          return;
+        }
+
+        const ownerMap = {};
+
+        ownerIdsToFetch.forEach((ownerId) => {
+          ownerMap[String(ownerId)] = `Unknown employee #${ownerId}`;
+        });
+
         setOwnerNameById((prev) => ({
           ...prev,
           ...ownerMap,
