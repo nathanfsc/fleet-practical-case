@@ -4,17 +4,16 @@ import {
   createDevice,
   removeDevice,
   updateDevice,
-} from "../../services/Devices.service";
-import { getEmployeeById } from "../../../employees/services/Employees.service";
-import { DEVICES_TAB_NAME } from "../../Devices.constant";
+} from "../../services/devicesService";
+import { getEmployeeById } from "../../../employees/services/employeesService";
 
-jest.mock("../../services/Devices.service", () => ({
+jest.mock("../../services/devicesService", () => ({
   createDevice: jest.fn(),
   removeDevice: jest.fn(),
   updateDevice: jest.fn(),
 }));
 
-jest.mock("../../../employees/services/Employees.service", () => ({
+jest.mock("../../../employees/services/employeesService", () => ({
   getEmployeeById: jest.fn(),
 }));
 
@@ -28,16 +27,16 @@ function setupDevicesTab(overrides = {}) {
       {
         id: 10,
         name: "MacBook Pro",
-        type: DEVICES_TAB_NAME.LAPTOP,
+        type: "Laptop",
         owner_id: 1,
       },
       {
         id: 11,
         name: "Dell Monitor",
-        type: DEVICES_TAB_NAME.DISPLAY,
+        type: "Display",
         owner_id: 2,
       },
-      { id: 12, name: "iPhone", type: DEVICES_TAB_NAME.MOBILE, owner_id: 2 },
+      { id: 12, name: "iPhone", type: "Mobile", owner_id: 2 },
     ],
     loadingDevices: false,
     refreshDevices: jest.fn().mockResolvedValue(undefined),
@@ -85,7 +84,7 @@ describe("DevicesTab - owner resolution feature", () => {
         {
           id: 10,
           name: "MacBook Pro",
-          type: DEVICES_TAB_NAME.LAPTOP,
+          type: "Laptop",
           owner_id: 99,
         },
       ],
@@ -112,7 +111,7 @@ describe("DevicesTab - mutation feature", () => {
       target: { value: "ThinkPad" },
     });
     fireEvent.change(screen.getByLabelText("Type"), {
-      target: { value: DEVICES_TAB_NAME.LAPTOP },
+      target: { value: "Laptop" },
     });
     fireEvent.change(screen.getByLabelText("Owner"), {
       target: { value: "1" },
@@ -123,7 +122,7 @@ describe("DevicesTab - mutation feature", () => {
       expect(createDevice).toHaveBeenCalledWith({
         payload: {
           name: "ThinkPad",
-          type: DEVICES_TAB_NAME.LAPTOP,
+          type: "Laptop",
           ownerId: "1",
         },
       });
@@ -148,7 +147,7 @@ describe("DevicesTab - mutation feature", () => {
         deviceId: 10,
         payload: {
           name: "MacBook Pro M3",
-          type: DEVICES_TAB_NAME.LAPTOP,
+          type: "Laptop",
           ownerId: "1",
         },
       });

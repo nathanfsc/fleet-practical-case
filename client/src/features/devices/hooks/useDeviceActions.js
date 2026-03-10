@@ -2,7 +2,7 @@ import {
   createDevice,
   removeDevice,
   updateDevice,
-} from "../services/Devices.service";
+} from "../services/devicesService";
 
 export function useDeviceActions({
   deviceForm,

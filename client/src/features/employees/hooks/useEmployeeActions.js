@@ -2,7 +2,7 @@ import {
   createEmployee,
   removeEmployee,
   updateEmployee,
-} from "../services/Employees.service";
+} from "../services/employeesService";
 
 export function useEmployeeActions({
   editingEmployeeId,

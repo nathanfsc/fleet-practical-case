@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { getDevices } from "../../features/devices/services/Devices.service";
-import { getEmployees } from "../../features/employees/services/Employees.service";
+import { getDevices } from "../../features/devices/services/devicesService";
+import { getEmployees } from "../../features/employees/services/employeesService";
 
 export function useFleetDashboard({ onError, onRefreshStart }) {
   const [employees, setEmployees] = useState([]);

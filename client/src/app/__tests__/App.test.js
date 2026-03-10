@@ -1,13 +1,13 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import App from "../App";
-import { getDevices } from "../../features/devices/services/Devices.service";
-import { getEmployees } from "../../features/employees/services/Employees.service";
+import { getDevices } from "../../features/devices/services/devicesService";
+import { getEmployees } from "../../features/employees/services/employeesService";
 
-jest.mock("../../features/devices/services/Devices.service", () => ({
+jest.mock("../../features/devices/services/devicesService", () => ({
   getDevices: jest.fn(),
 }));
 
-jest.mock("../../features/employees/services/Employees.service", () => ({
+jest.mock("../../features/employees/services/employeesService", () => ({
   getEmployees: jest.fn(),
 }));
 

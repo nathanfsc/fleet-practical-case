@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getEmployeeById } from "../../employees/services/Employees.service";
+import { getEmployeeById } from "../../employees/services/employeesService";
 
 export function useDeviceOwnerNames(filteredDevices) {
   const [ownerNameById, setOwnerNameById] = useState({});
