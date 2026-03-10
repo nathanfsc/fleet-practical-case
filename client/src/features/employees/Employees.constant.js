@@ -6,3 +6,5 @@ export const EMPLOYEE_ROLE_OPTIONS = Object.freeze([
   "Designer",
   "Developer",
 ]);
+
+export const EMPLOYEES_TAB_NAME = "employees";

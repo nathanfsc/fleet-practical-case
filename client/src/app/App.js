@@ -3,9 +3,11 @@ import "./App.css";
 import EmployeesTab from "../features/employees/components/EmployeesTab";
 import DevicesTab from "../features/devices/components/DevicesTab";
 import { getDevices } from "../features/devices/services/Devices.service";
+import { EMPLOYEES_TAB_NAME } from "../features/employees/Employees.constant";
+import { DEVICES_TAB_NAME } from "../features/devices/Devices.constant";
 
 function App() {
-  const [activeTab, setActiveTab] = useState("employees");
+  const [activeTab, setActiveTab] = useState(EMPLOYEES_TAB_NAME);
   const [employees, setEmployees] = useState([]);
   const [devices, setDevices] = useState([]);
   const [statusMessage, setStatusMessage] = useState("");
@@ -23,9 +25,12 @@ function App() {
     const savedTab = window.localStorage.getItem("fleet_active_tab");
     const hash = window.location.hash.replace("#", "");
 
-    if (hash === "employees" || hash === "devices") {
+    if (hash === EMPLOYEES_TAB_NAME || hash === DEVICES_TAB_NAME) {
       setActiveTab(hash);
-    } else if (savedTab === "employees" || savedTab === "devices") {
+    } else if (
+      savedTab === EMPLOYEES_TAB_NAME ||
+      savedTab === DEVICES_TAB_NAME
+    ) {
       setActiveTab(savedTab);
     }
   }, []);
@@ -35,6 +40,7 @@ function App() {
     window.location.hash = activeTab;
   }, [activeTab]);
 
+  //todo: fetch
   useEffect(() => {
     fetchEmployees();
     fetchDevices();
@@ -85,7 +91,7 @@ function App() {
       setDevices(nextDevices);
       setLastRefreshAt(new Date().toISOString());
     } catch (error) {
-      setErrors((prev) => [...prev, `Devices fetch failed: ${error.message}`]);
+      setErrors((prev) => [...prev, error.message]);
     } finally {
       setLoadingDevices(false);
     }
@@ -124,18 +130,20 @@ function App() {
       <div className="app-controls">
         <button
           className={
-            activeTab === "employees" ? "tab-button active" : "tab-button"
+            activeTab === EMPLOYEES_TAB_NAME
+              ? "tab-button active"
+              : "tab-button"
           }
-          onClick={() => setActiveTab("employees")}
+          onClick={() => setActiveTab(EMPLOYEES_TAB_NAME)}
           type="button"
         >
           Employees
         </button>
         <button
           className={
-            activeTab === "devices" ? "tab-button active" : "tab-button"
+            activeTab === DEVICES_TAB_NAME ? "tab-button active" : "tab-button"
           }
-          onClick={() => setActiveTab("devices")}
+          onClick={() => setActiveTab(DEVICES_TAB_NAME)}
           type="button"
         >
           Devices
@@ -173,7 +181,7 @@ function App() {
       ) : null}
 
       <main className="app-main">
-        {activeTab === "employees" ? (
+        {activeTab === EMPLOYEES_TAB_NAME ? (
           <EmployeesTab
             employees={employees}
             loadingEmployees={loadingEmployees}
@@ -184,7 +192,7 @@ function App() {
           />
         ) : null}
 
-        {activeTab === "devices" ? (
+        {activeTab === DEVICES_TAB_NAME ? (
           <DevicesTab
             employees={employees}
             devices={devices}

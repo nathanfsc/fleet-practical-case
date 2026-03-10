@@ -3,7 +3,7 @@ export async function getDevices() {
   const json = await response.json();
 
   if (!response.ok) {
-    throw new Error(json.message || "Could not load devices");
+    throw new Error(`Could not get devices with error: ${json.message}`);
   }
 
   return Array.isArray(json) ? json : [];
