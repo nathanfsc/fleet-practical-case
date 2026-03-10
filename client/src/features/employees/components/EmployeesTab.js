@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { EMPLOYEE_ROLE_OPTIONS } from "../Employees.constant";
+import {
+  createEmployee,
+  removeEmployee,
+  updateEmployee,
+} from "../services/Employees.service";
 
 const DEFAULT_EMPLOYEE_FORM = { name: "", role: "" };
 
@@ -61,28 +66,19 @@ function EmployeesTab({
     };
 
     const isEditing = Boolean(editingEmployeeId);
-    const url = isEditing
-      ? `/api/employees/${editingEmployeeId}`
-      : "/api/employees";
-    const method = isEditing ? "PUT" : "POST";
 
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const json = await response.json();
-      if (!response.ok) {
-        throw new Error(json.message || "Could not save employee");
-      }
+      isEditing
+        ? await updateEmployee({ employeeId: editingEmployeeId, payload })
+        : await createEmployee({ payload });
+
       onStatusMessage(isEditing ? "Employee updated" : "Employee created");
       setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
       setEditingEmployeeId(null);
       await refreshEmployees();
       await refreshDevices();
     } catch (error) {
-      onError(`Employee save failed: ${error.message}`);
+      onError(error.message);
     }
   }
 
@@ -95,13 +91,8 @@ function EmployeesTab({
     }
 
     try {
-      const response = await fetch(`/api/employees/${employeeId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        const json = await response.json();
-        throw new Error(json.message || "Could not delete employee");
-      }
+      await removeEmployee(employeeId);
+
       onStatusMessage("Employee deleted");
       await refreshEmployees();
     } catch (error) {

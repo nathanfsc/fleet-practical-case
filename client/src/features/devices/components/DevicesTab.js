@@ -6,6 +6,7 @@ import {
   removeDevice,
   updateDevice,
 } from "../services/Devices.service";
+import { getEmployeeById } from "../../employees/services/Employees.service";
 
 const DEFAULT_DEVICE_FORM = { name: "", type: "Laptop", ownerId: "" };
 
@@ -90,23 +91,18 @@ function DevicesTab({
     Promise.all(
       ownerIds.map(async (ownerId) => {
         try {
-          const response = await fetch(`/api/employees/${ownerId}`);
+          const employee = await getEmployeeById(ownerId);
 
-          if (response.status === 404) {
+          if (!employee) {
             return {
               ownerId: String(ownerId),
               ownerName: `Unknown employee #${ownerId}`,
             };
           }
 
-          if (!response.ok) {
-            throw new Error(`Failed to resolve owner ${ownerId}`);
-          }
-
-          const json = await response.json();
           return {
             ownerId: String(ownerId),
-            ownerName: json.name,
+            ownerName: employee.name,
           };
         } catch (error) {
           return {

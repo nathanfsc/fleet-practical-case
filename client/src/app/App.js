@@ -3,6 +3,7 @@ import "./App.css";
 import EmployeesTab from "../features/employees/components/EmployeesTab";
 import DevicesTab from "../features/devices/components/DevicesTab";
 import { getDevices } from "../features/devices/services/Devices.service";
+import { getEmployees } from "../features/employees/services/Employees.service";
 import { EMPLOYEES_TAB_NAME } from "../features/employees/Employees.constant";
 import { DEVICES_TAB_NAME } from "../features/devices/Devices.constant";
 
@@ -40,7 +41,7 @@ function App() {
     window.location.hash = activeTab;
   }, [activeTab]);
 
-  //todo: fetch
+  //todo: ajouter une route de count si possible pour éviter de charger tous les devices/employees juste pour le count du dashboard
   useEffect(() => {
     fetchEmployees();
     fetchDevices();
@@ -67,18 +68,11 @@ function App() {
     setLoadingEmployees(true);
     setErrors([]);
     try {
-      const response = await fetch("/api/employees");
-      const json = await response.json();
-      if (!response.ok) {
-        throw new Error(json.message || "Could not load employees");
-      }
-      setEmployees(Array.isArray(json) ? json : []);
+      const nextEmployees = await getEmployees();
+      setEmployees(nextEmployees);
       setLastRefreshAt(new Date().toISOString());
     } catch (error) {
-      setErrors((prev) => [
-        ...prev,
-        `Employees fetch failed: ${error.message}`,
-      ]);
+      appendError(error.message);
     } finally {
       setLoadingEmployees(false);
     }
@@ -91,7 +85,7 @@ function App() {
       setDevices(nextDevices);
       setLastRefreshAt(new Date().toISOString());
     } catch (error) {
-      setErrors((prev) => [...prev, error.message]);
+      appendError(error.message);
     } finally {
       setLoadingDevices(false);
     }
