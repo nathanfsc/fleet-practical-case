@@ -7,6 +7,9 @@ import {
 } from "../../services/employeesService";
 import { EMPLOYEE_ROLE_OPTIONS } from "../../Employees.constant";
 
+const [SUPPORT, OPS, QA, PRODUCT_MANAGER, DESIGNER, DEVELOPER] =
+  EMPLOYEE_ROLE_OPTIONS;
+
 jest.mock("../../services/employeesService", () => ({
   createEmployee: jest.fn(),
   removeEmployee: jest.fn(),
@@ -19,13 +22,13 @@ function setupEmployeesTab(overrides = {}) {
       {
         id: 1,
         name: "Alice",
-        role: EMPLOYEE_ROLE_OPTIONS.DEVELOPER,
+        role: DEVELOPER,
         device_count: 2,
       },
       {
         id: 2,
         name: "Bob",
-        role: EMPLOYEE_ROLE_OPTIONS.SUPPORT,
+        role: SUPPORT,
         device_count: 1,
       },
     ],
@@ -51,7 +54,7 @@ describe("EmployeesTab - filtering feature", () => {
     setupEmployeesTab();
 
     fireEvent.change(screen.getByLabelText("Role filter"), {
-      target: { value: EMPLOYEE_ROLE_OPTIONS.SUPPORT },
+      target: { value: SUPPORT },
     });
 
     expect(screen.getByText("Bob")).toBeInTheDocument();
@@ -86,16 +89,16 @@ describe("EmployeesTab - mutation feature", () => {
       target: { value: "Charlie" },
     });
     fireEvent.change(
-      screen.getByPlaceholderText(EMPLOYEE_ROLE_OPTIONS.DEVELOPER),
+      screen.getByPlaceholderText(DEVELOPER),
       {
-        target: { value: EMPLOYEE_ROLE_OPTIONS.QA },
+        target: { value: QA },
       },
     );
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => {
       expect(createEmployee).toHaveBeenCalledWith({
-        payload: { name: "Charlie", role: EMPLOYEE_ROLE_OPTIONS.QA },
+        payload: { name: "Charlie", role: QA },
       });
     });
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee created");
@@ -112,9 +115,9 @@ describe("EmployeesTab - mutation feature", () => {
       target: { value: "Alice Updated" },
     });
     fireEvent.change(
-      screen.getByPlaceholderText(EMPLOYEE_ROLE_OPTIONS.DEVELOPER),
+      screen.getByPlaceholderText(DEVELOPER),
       {
-        target: { value: EMPLOYEE_ROLE_OPTIONS.PRODUCT_MANAGER },
+        target: { value: PRODUCT_MANAGER },
       },
     );
     fireEvent.click(screen.getByRole("button", { name: "Update" }));
@@ -124,7 +127,7 @@ describe("EmployeesTab - mutation feature", () => {
         employeeId: 1,
         payload: {
           name: "Alice Updated",
-          role: EMPLOYEE_ROLE_OPTIONS.PRODUCT_MANAGER,
+          role: PRODUCT_MANAGER,
         },
       });
     });
@@ -132,7 +135,7 @@ describe("EmployeesTab - mutation feature", () => {
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee updated");
   });
 
-  it("deletes an employee when confirmation is accepted", async () => {
+  it("deletes an employee and refreshes devices so unassigned devices are reloaded", async () => {
     const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(true);
     const setup = setupEmployeesTab();
 
@@ -144,6 +147,7 @@ describe("EmployeesTab - mutation feature", () => {
 
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee deleted");
     expect(setup.refreshEmployees).toHaveBeenCalledTimes(1);
+    expect(setup.refreshDevices).toHaveBeenCalledTimes(1);
 
     confirmSpy.mockRestore();
   });
