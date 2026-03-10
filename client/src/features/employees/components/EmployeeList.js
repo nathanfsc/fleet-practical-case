@@ -10,6 +10,9 @@ function EmployeesTab({
   refreshDevices,
   onStatusMessage,
   onError,
+  createTitle,
+  editTitle,
+  listTitle,
 }) {
   const {
     roleFilter,
@@ -39,7 +42,10 @@ function EmployeesTab({
 
   return (
     <section className="panel">
-      <h2>{editingEmployeeId ? "Edit employee" : "Create employee"}</h2>
+      {createTitle || editTitle ? (
+        <h2>{editingEmployeeId ? editTitle : createTitle}</h2>
+      ) : null}
+
       <form className="app-form" onSubmit={submitEmployee}>
         <label>
           Name
@@ -107,7 +113,11 @@ function EmployeesTab({
         </label>
       </div>
 
-      <h3>Employee list {loadingEmployees ? "(loading...)" : ""}</h3>
+      {listTitle ? (
+        <h3>
+          {listTitle} {loadingEmployees ? "(loading...)" : ""}
+        </h3>
+      ) : null}
       <table>
         <thead>
           <tr>

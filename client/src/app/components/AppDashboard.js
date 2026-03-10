@@ -1,3 +1,5 @@
+import "./AppDashboard.css";
+
 function AppDashboard({ dashboardState }) {
   return (
     <section className="app-kpis">

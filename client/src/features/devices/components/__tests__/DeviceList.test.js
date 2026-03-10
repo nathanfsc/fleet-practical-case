@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import DevicesTab from "../DevicesTab";
+import DevicesTab from "../DeviceList";
 import {
   createDevice,
   removeDevice,

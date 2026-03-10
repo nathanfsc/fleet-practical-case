@@ -6,11 +6,11 @@ import AppNotifications from "./components/AppNotifications";
 import { useActiveTab } from "./hooks/useActiveTab";
 import { useAppFeedback } from "./hooks/useAppFeedback";
 import { useFleetDashboard } from "./hooks/useFleetDashboard";
-import EmployeesTab from "../features/employees/components/EmployeesTab";
-import DevicesTab from "../features/devices/components/DevicesTab";
+import EmployeesTab from "../features/employees/components/EmployeeList";
+import DevicesTab from "../features/devices/components/DeviceList";
 import { EMPLOYEES_TAB_NAME } from "../features/employees/Employees.constant";
 import { DEVICES_TAB_NAME } from "../features/devices/Devices.constant";
-import CatalogTab from "../features/catalog/components/CatalogTab";
+import CatalogTab from "../features/catalog/components/CatalogList";
 import { CATALOG_TAB_NAME } from "../features/catalog/Catalog.constant";
 
 function App() {
@@ -51,7 +51,10 @@ function App() {
       <main className="app-main">
         {activeTab === EMPLOYEES_TAB_NAME ? (
           <EmployeesTab
+            createTitle="Create employee"
+            editTitle="Edit employee"
             employees={employees}
+            listTitle="Employee list"
             loadingEmployees={loadingEmployees}
             refreshEmployees={refreshEmployees}
             refreshDevices={refreshDevices}
@@ -62,8 +65,11 @@ function App() {
 
         {activeTab === DEVICES_TAB_NAME ? (
           <DevicesTab
+            createTitle="Create device"
             employees={employees}
             devices={devices}
+            editTitle="Edit device"
+            listTitle="Device list"
             loadingDevices={loadingDevices}
             refreshDevices={refreshDevices}
             refreshEmployees={refreshEmployees}
@@ -72,7 +78,9 @@ function App() {
           />
         ) : null}
 
-        {activeTab === CATALOG_TAB_NAME ? <CatalogTab /> : null}
+        {activeTab === CATALOG_TAB_NAME ? (
+          <CatalogTab title="Catalog" cartTitle="Cart" />
+        ) : null}
       </main>
     </div>
   );

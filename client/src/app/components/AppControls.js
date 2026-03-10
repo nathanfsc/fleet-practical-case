@@ -1,3 +1,5 @@
+import "./AppControls.css";
+
 import { CATALOG_TAB_NAME } from "../../features/catalog/Catalog.constant";
 import { DEVICES_TAB_NAME } from "../../features/devices/Devices.constant";
 import { EMPLOYEES_TAB_NAME } from "../../features/employees/Employees.constant";

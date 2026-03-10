@@ -11,15 +11,21 @@ jest.mock("../../features/employees/services/employeesService", () => ({
   getEmployees: jest.fn(),
 }));
 
-jest.mock("../../features/employees/components/EmployeesTab", () => {
+jest.mock("../../features/employees/components/EmployeeList", () => {
   return function MockEmployeesTab() {
     return <div data-testid="employees-tab">Employees Tab</div>;
   };
 });
 
-jest.mock("../../features/devices/components/DevicesTab", () => {
+jest.mock("../../features/devices/components/DeviceList", () => {
   return function MockDevicesTab() {
     return <div data-testid="devices-tab">Devices Tab</div>;
+  };
+});
+
+jest.mock("../../features/catalog/components/CatalogList", () => {
+  return function MockCatalogTab() {
+    return <div data-testid="catalog-tab">Catalog Tab</div>;
   };
 });
 
@@ -50,6 +56,16 @@ describe("App - navigation feature", () => {
     await waitFor(() => {
       expect(window.localStorage.getItem("fleet_active_tab")).toBe("devices");
     });
+  });
+
+  it("renders the catalog tab only when catalog is active", async () => {
+    render(<App />);
+
+    expect(screen.queryByTestId("catalog-tab")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Catalog" }));
+
+    expect(await screen.findByTestId("catalog-tab")).toBeInTheDocument();
   });
 });
 

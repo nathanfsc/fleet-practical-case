@@ -12,6 +12,9 @@ function DevicesTab({
   refreshEmployees,
   onStatusMessage,
   onError,
+  createTitle,
+  editTitle,
+  listTitle,
 }) {
   const {
     deviceTypeFilter,
@@ -61,7 +64,10 @@ function DevicesTab({
 
   return (
     <section className="panel">
-      <h2>{isEditing ? "Edit device" : "Create device"}</h2>
+      {createTitle || editTitle ? (
+        <h2>{isEditing ? editTitle : createTitle}</h2>
+      ) : null}
+
       <form className="app-form" onSubmit={submitDevice}>
         <label>
           Device name
@@ -164,10 +170,12 @@ function DevicesTab({
         </label>
       </div>
 
-      <h3>
-        Device list {loadingDevices ? "(loading...)" : ""}{" "}
-        {loadingOwnerNames ? "(resolving owners...)" : ""}
-      </h3>
+      {listTitle ? (
+        <h3>
+          {listTitle} {loadingDevices ? "(loading...)" : ""}{" "}
+          {loadingOwnerNames ? "(resolving owners...)" : ""}
+        </h3>
+      ) : null}
       <table>
         <thead>
           <tr>

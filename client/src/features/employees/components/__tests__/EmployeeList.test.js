@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import EmployeesTab from "../EmployeesTab";
+import EmployeesTab from "../EmployeeList";
 import {
   createEmployee,
   removeEmployee,

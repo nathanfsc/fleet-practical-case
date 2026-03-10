@@ -1,3 +1,5 @@
+import "./AppNotifications.css";
+
 function AppNotifications({
   errors,
   lastRefreshAt,
