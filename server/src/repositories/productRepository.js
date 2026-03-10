@@ -10,16 +10,19 @@ class ProductRepository {
       SELECT
         p.id,
         p.name,
-        p.base_price,
         pv.id AS variant_id,
-        pv.price_delta,
-        pv.configuration
+        pv.configuration,
+        pv.stock,
+        (p.base_price + pv.price_delta) AS price
       FROM products p
       INNER JOIN product_variants pv ON p.id = pv.product_id
       ORDER BY p.id DESC
     `;
 
-    return this.dbClient.all(sql);
+    const rows = await this.dbClient.all(sql);
+
+    console.log("COUCOU -> ", rows);
+    return rows;
   }
 }
 
