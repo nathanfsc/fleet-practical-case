@@ -109,8 +109,8 @@ describe("App - dashboard and errors feature", () => {
 
     render(<App />);
 
-    expect(await screen.findByText("Employees fetch failed")).toBeInTheDocument();
-    expect(await screen.findByText("Devices fetch failed")).toBeInTheDocument();
+    expect(screen.getByText("Employees fetch failed")).toBeInTheDocument();
+    expect(screen.getByText("Devices fetch failed")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Clear" }));
 

@@ -5,6 +5,7 @@ import {
   removeEmployee,
   updateEmployee,
 } from "../../services/Employees.service";
+import { EMPLOYEE_ROLE_OPTIONS } from "../../Employees.constant";
 
 jest.mock("../../services/Employees.service", () => ({
   createEmployee: jest.fn(),
@@ -15,8 +16,18 @@ jest.mock("../../services/Employees.service", () => ({
 function setupEmployeesTab(overrides = {}) {
   const props = {
     employees: [
-      { id: 1, name: "Alice", role: "Developer", device_count: 2 },
-      { id: 2, name: "Bob", role: "Support", device_count: 1 },
+      {
+        id: 1,
+        name: "Alice",
+        role: EMPLOYEE_ROLE_OPTIONS.DEVELOPER,
+        device_count: 2,
+      },
+      {
+        id: 2,
+        name: "Bob",
+        role: EMPLOYEE_ROLE_OPTIONS.SUPPORT,
+        device_count: 1,
+      },
     ],
     loadingEmployees: false,
     refreshEmployees: jest.fn().mockResolvedValue(undefined),
@@ -40,7 +51,7 @@ describe("EmployeesTab - filtering feature", () => {
     setupEmployeesTab();
 
     fireEvent.change(screen.getByLabelText("Role filter"), {
-      target: { value: "Support" },
+      target: { value: EMPLOYEE_ROLE_OPTIONS.SUPPORT },
     });
 
     expect(screen.getByText("Bob")).toBeInTheDocument();
@@ -75,13 +86,13 @@ describe("EmployeesTab - mutation feature", () => {
       target: { value: "Charlie" },
     });
     fireEvent.change(screen.getByPlaceholderText("Developer"), {
-      target: { value: "QA" },
+      target: { value: EMPLOYEE_ROLE_OPTIONS.QA },
     });
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => {
       expect(createEmployee).toHaveBeenCalledWith({
-        payload: { name: "Charlie", role: "QA" },
+        payload: { name: "Charlie", role: EMPLOYEE_ROLE_OPTIONS.QA },
       });
     });
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee created");
@@ -98,14 +109,17 @@ describe("EmployeesTab - mutation feature", () => {
       target: { value: "Alice Updated" },
     });
     fireEvent.change(screen.getByPlaceholderText("Developer"), {
-      target: { value: "Product Manager" },
+      target: { value: EMPLOYEE_ROLE_OPTIONS.PRODUCT_MANAGER },
     });
     fireEvent.click(screen.getByRole("button", { name: "Update" }));
 
     await waitFor(() => {
       expect(updateEmployee).toHaveBeenCalledWith({
         employeeId: 1,
-        payload: { name: "Alice Updated", role: "Product Manager" },
+        payload: {
+          name: "Alice Updated",
+          role: EMPLOYEE_ROLE_OPTIONS.PRODUCT_MANAGER,
+        },
       });
     });
 
