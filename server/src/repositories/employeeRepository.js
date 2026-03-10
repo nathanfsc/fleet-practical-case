@@ -44,6 +44,19 @@ class EmployeeRepository {
     );
   }
 
+  findByIds(ids) {
+    if (ids.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    const placeholders = ids.map(() => "?").join(", ");
+
+    return this.dbClient.all(
+      `SELECT id, name, role, created_at FROM employees WHERE id IN (${placeholders})`,
+      ids,
+    );
+  }
+
   async create(employee) {
     const result = await this.dbClient.run(
       "INSERT INTO employees (name, role) VALUES (?, ?)",

@@ -4,6 +4,7 @@ function createEmployeeRouter(employeeController) {
   const router = express.Router();
 
   router.get("/employees", employeeController.listEmployees);
+  router.get("/employees/by-ids", employeeController.getEmployeesByIds);
   router.get("/employees/:id", employeeController.getEmployeeById);
   router.post("/employees", employeeController.createEmployee);
   router.put("/employees/:id", employeeController.updateEmployee);

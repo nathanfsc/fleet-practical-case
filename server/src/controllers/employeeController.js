@@ -5,6 +5,7 @@ class EmployeeController {
   constructor() {
     this.employeeService = new EmployeeService();
     this.listEmployees = this.listEmployees.bind(this);
+    this.getEmployeesByIds = this.getEmployeesByIds.bind(this);
     this.getEmployeeById = this.getEmployeeById.bind(this);
     this.createEmployee = this.createEmployee.bind(this);
     this.updateEmployee = this.updateEmployee.bind(this);
@@ -14,6 +15,17 @@ class EmployeeController {
   async listEmployees(req, res) {
     try {
       const employees = await this.employeeService.listEmployees(req.query || {});
+      res.json(employees);
+    } catch (error) {
+      sendErrorResponse(res, error, "Failed to fetch employees");
+    }
+  }
+
+  async getEmployeesByIds(req, res) {
+    try {
+      const employees = await this.employeeService.getEmployeesByIds(
+        req.query?.ids,
+      );
       res.json(employees);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to fetch employees");

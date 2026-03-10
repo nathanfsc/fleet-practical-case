@@ -34,8 +34,29 @@ function optionalId(value) {
   return id;
 }
 
+function requireIds(value, label) {
+  const rawValue = Array.isArray(value) ? value.join(",") : value;
+  const normalizedValue = (rawValue || "").toString().trim();
+
+  if (!normalizedValue) {
+    throw createHttpError(400, `Missing ${label}`);
+  }
+
+  const ids = normalizedValue.split(",").map((entry) => Number(entry.trim()));
+
+  if (
+    ids.length === 0 ||
+    ids.some((id) => !Number.isInteger(id) || id <= 0)
+  ) {
+    throw createHttpError(400, `Invalid ${label}`);
+  }
+
+  return Array.from(new Set(ids));
+}
+
 module.exports = {
   optionalId,
+  requireIds,
   requireId,
   requireText,
 };
