@@ -6,6 +6,7 @@ import {
   updateDevice,
 } from "../../services/devicesService";
 import { getEmployeeById } from "../../../employees/services/employeesService";
+import { DEVICE_TYPE_OPTIONS } from "../../Devices.constant";
 
 jest.mock("../../services/devicesService", () => ({
   createDevice: jest.fn(),
@@ -27,16 +28,16 @@ function setupDevicesTab(overrides = {}) {
       {
         id: 10,
         name: "MacBook Pro",
-        type: "Laptop",
+        type: DEVICE_TYPE_OPTIONS.LAPTOP,
         owner_id: 1,
       },
       {
         id: 11,
         name: "Dell Monitor",
-        type: "Display",
+        type: DEVICE_TYPE_OPTIONS.DISPLAY,
         owner_id: 2,
       },
-      { id: 12, name: "iPhone", type: "Mobile", owner_id: 2 },
+      { id: 12, name: "iPhone", type: DEVICE_TYPE_OPTIONS.MOBILE, owner_id: 2 },
     ],
     loadingDevices: false,
     refreshDevices: jest.fn().mockResolvedValue(undefined),
@@ -84,7 +85,7 @@ describe("DevicesTab - owner resolution feature", () => {
         {
           id: 10,
           name: "MacBook Pro",
-          type: "Laptop",
+          type: DEVICE_TYPE_OPTIONS.LAPTOP,
           owner_id: 99,
         },
       ],
@@ -111,7 +112,7 @@ describe("DevicesTab - mutation feature", () => {
       target: { value: "ThinkPad" },
     });
     fireEvent.change(screen.getByLabelText("Type"), {
-      target: { value: "Laptop" },
+      target: { value: DEVICE_TYPE_OPTIONS.LAPTOP },
     });
     fireEvent.change(screen.getByLabelText("Owner"), {
       target: { value: "1" },
@@ -122,7 +123,7 @@ describe("DevicesTab - mutation feature", () => {
       expect(createDevice).toHaveBeenCalledWith({
         payload: {
           name: "ThinkPad",
-          type: "Laptop",
+          type: DEVICE_TYPE_OPTIONS.LAPTOP,
           ownerId: "1",
         },
       });
@@ -147,7 +148,7 @@ describe("DevicesTab - mutation feature", () => {
         deviceId: 10,
         payload: {
           name: "MacBook Pro M3",
-          type: "Laptop",
+          type: DEVICE_TYPE_OPTIONS.LAPTOP,
           ownerId: "1",
         },
       });

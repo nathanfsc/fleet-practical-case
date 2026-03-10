@@ -5,6 +5,7 @@ import {
   removeEmployee,
   updateEmployee,
 } from "../../services/employeesService";
+import { EMPLOYEE_ROLE_OPTIONS } from "../../Employees.constant";
 
 jest.mock("../../services/employeesService", () => ({
   createEmployee: jest.fn(),
@@ -18,13 +19,13 @@ function setupEmployeesTab(overrides = {}) {
       {
         id: 1,
         name: "Alice",
-        role: "Developer",
+        role: EMPLOYEE_ROLE_OPTIONS.DEVELOPER,
         device_count: 2,
       },
       {
         id: 2,
         name: "Bob",
-        role: "Support",
+        role: EMPLOYEE_ROLE_OPTIONS.SUPPORT,
         device_count: 1,
       },
     ],
@@ -50,7 +51,7 @@ describe("EmployeesTab - filtering feature", () => {
     setupEmployeesTab();
 
     fireEvent.change(screen.getByLabelText("Role filter"), {
-      target: { value: "Support" },
+      target: { value: EMPLOYEE_ROLE_OPTIONS.SUPPORT },
     });
 
     expect(screen.getByText("Bob")).toBeInTheDocument();
@@ -84,14 +85,17 @@ describe("EmployeesTab - mutation feature", () => {
     fireEvent.change(screen.getByPlaceholderText("Employee name"), {
       target: { value: "Charlie" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Developer"), {
-      target: { value: "QA" },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText(EMPLOYEE_ROLE_OPTIONS.DEVELOPER),
+      {
+        target: { value: EMPLOYEE_ROLE_OPTIONS.QA },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: "Create" }));
 
     await waitFor(() => {
       expect(createEmployee).toHaveBeenCalledWith({
-        payload: { name: "Charlie", role: "QA" },
+        payload: { name: "Charlie", role: EMPLOYEE_ROLE_OPTIONS.QA },
       });
     });
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee created");
@@ -107,9 +111,12 @@ describe("EmployeesTab - mutation feature", () => {
     fireEvent.change(screen.getByPlaceholderText("Employee name"), {
       target: { value: "Alice Updated" },
     });
-    fireEvent.change(screen.getByPlaceholderText("Developer"), {
-      target: { value: "Product Manager" },
-    });
+    fireEvent.change(
+      screen.getByPlaceholderText(EMPLOYEE_ROLE_OPTIONS.DEVELOPER),
+      {
+        target: { value: EMPLOYEE_ROLE_OPTIONS.PRODUCT_MANAGER },
+      },
+    );
     fireEvent.click(screen.getByRole("button", { name: "Update" }));
 
     await waitFor(() => {
@@ -117,7 +124,7 @@ describe("EmployeesTab - mutation feature", () => {
         employeeId: 1,
         payload: {
           name: "Alice Updated",
-          role: "Product Manager",
+          role: EMPLOYEE_ROLE_OPTIONS.PRODUCT_MANAGER,
         },
       });
     });
