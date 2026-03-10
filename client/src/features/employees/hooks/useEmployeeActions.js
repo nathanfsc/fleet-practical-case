@@ -50,6 +50,7 @@ export function useEmployeeActions({
 
       onStatusMessage("Employee deleted");
       await refreshEmployees();
+      await refreshDevices();
     } catch (error) {
       onError(`Employee delete failed: ${error.message}`);
     }
