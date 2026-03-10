@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import EmployeesTab from "./components/EmployeesTab/EmployeesTab";
+import EmployeesTab from "../components/EmployeesTab/EmployeesTab";
 
 const DEFAULT_DEVICE_FORM = { name: "", type: "Laptop", ownerId: "" };
 

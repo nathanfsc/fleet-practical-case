@@ -111,10 +111,7 @@ function EmployeesTab({
 
   function beginEmployeeEdit(employee) {
     setEditingEmployeeId(employee.id);
-    setEmployeeForm({
-      name: employee.name || "",
-      role: employee.role || "",
-    });
+    setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
   }
 
   function resetEmployeeForm() {
