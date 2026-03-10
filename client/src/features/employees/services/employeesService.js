@@ -62,16 +62,11 @@ export async function removeEmployee(employeeId) {
     method: "DELETE",
   });
 
+  const json = await response.json();
+
   if (!response.ok) {
-    let message = "Could not delete employee";
-
-    try {
-      const json = await response.json();
-      message = json.message || message;
-    } catch {
-      // Ignore non-JSON delete errors and use default message.
-    }
-
-    throw new Error(message);
+    throw new Error(`Could not delete employee, with error: ${json.message}`);
   }
+
+  return json;
 }

@@ -46,16 +46,11 @@ export async function removeDevice(deviceId) {
     method: "DELETE",
   });
 
+  const json = await response.json();
+
   if (!response.ok) {
-    let message = "Could not delete device";
-
-    try {
-      const json = await response.json();
-      message = json.message || message;
-    } catch {
-      // Ignore non-JSON delete errors and use default message.
-    }
-
-    throw new Error(message);
+    throw new Error(`Could not delete device, with error: ${json.message}`);
   }
+
+  return json;
 }
