@@ -26,14 +26,7 @@ function App() {
     const savedTab = window.localStorage.getItem("fleet_active_tab");
     const hash = window.location.hash.replace("#", "");
 
-    if (hash === EMPLOYEES_TAB_NAME || hash === DEVICES_TAB_NAME) {
-      setActiveTab(hash);
-    } else if (
-      savedTab === EMPLOYEES_TAB_NAME ||
-      savedTab === DEVICES_TAB_NAME
-    ) {
-      setActiveTab(savedTab);
-    }
+    setActiveTab(hash || savedTab || EMPLOYEES_TAB_NAME);
   }, []);
 
   useEffect(() => {
