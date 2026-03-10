@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import EmployeesTab from "../components/EmployeesTab/EmployeesTab";
-import DevicesTab from "../components/DevicesTab/DevicesTab";
+import DevicesTab from "../features/devices/components/DevicesTab";
+import { getDevices } from "../features/devices/services/Devices.service";
 
 function App() {
   const [activeTab, setActiveTab] = useState("employees");
@@ -80,12 +81,8 @@ function App() {
   async function fetchDevices() {
     setLoadingDevices(true);
     try {
-      const response = await fetch("/api/devices");
-      const json = await response.json();
-      if (!response.ok) {
-        throw new Error(json.message || "Could not load devices");
-      }
-      setDevices(Array.isArray(json) ? json : []);
+      const nextDevices = await getDevices();
+      setDevices(nextDevices);
       setLastRefreshAt(new Date().toISOString());
     } catch (error) {
       setErrors((prev) => [...prev, `Devices fetch failed: ${error.message}`]);

@@ -1,6 +1,7 @@
 //todo: fix les 10 000 calls au back a l'init
 import { useEffect, useMemo, useState } from "react";
-import { DEVICE_TYPE_OPTIONS } from "./DeviceTab.constant";
+import { DEVICE_TYPE_OPTIONS } from "../Devices.constant";
+import { removeDevice, saveDevice } from "../services/Devices.service";
 
 const DEFAULT_DEVICE_FORM = { name: "", type: "Laptop", ownerId: "" };
 
@@ -131,19 +132,12 @@ function DevicesTab({
       ownerId: deviceForm.ownerId || null,
     };
 
-    const url = isEditing ? `/api/devices/${editingDeviceId}` : "/api/devices";
-    const method = isEditing ? "PUT" : "POST";
-
     try {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      await saveDevice({
+        deviceId: editingDeviceId,
+        payload,
       });
-      const json = await response.json();
-      if (!response.ok) {
-        throw new Error(json.message || "Could not save device");
-      }
+
       onStatusMessage(isEditing ? "Device updated" : "Device created");
       setDeviceForm(DEFAULT_DEVICE_FORM);
       setEditingDeviceId(null);
@@ -161,13 +155,8 @@ function DevicesTab({
     }
 
     try {
-      const response = await fetch(`/api/devices/${deviceId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        const json = await response.json();
-        throw new Error(json.message || "Could not delete device");
-      }
+      await removeDevice(deviceId);
+
       onStatusMessage("Device deleted");
       await refreshDevices();
       await refreshEmployees();
