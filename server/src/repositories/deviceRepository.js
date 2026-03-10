@@ -1,5 +1,11 @@
-function createDeviceRepository(dbClient) {
-  async function findAll(filters) {
+const { dbClient } = require("../database");
+
+class DeviceRepository {
+  constructor() {
+    this.dbClient = dbClient;
+  }
+
+  async findAll(filters) {
     const type = filters.type || "";
     const ownerId = filters.ownerId || "";
     const search = filters.search || "";
@@ -33,11 +39,11 @@ function createDeviceRepository(dbClient) {
 
     sql += " ORDER BY d.id DESC";
 
-    return dbClient.all(sql, params);
+    return this.dbClient.all(sql, params);
   }
 
-  function findDetailedById(id) {
-    return dbClient.get(
+  findDetailedById(id) {
+    return this.dbClient.get(
       `
       SELECT
         d.id,
@@ -54,46 +60,37 @@ function createDeviceRepository(dbClient) {
     );
   }
 
-  async function create(device) {
-    const result = await dbClient.run(
+  async create(device) {
+    const result = await this.dbClient.run(
       "INSERT INTO devices (name, type, owner_id) VALUES (?, ?, ?)",
       [device.name, device.type, device.ownerId],
     );
 
-    return findDetailedById(result.lastID);
+    return this.findDetailedById(result.lastID);
   }
 
-  async function update(id, device) {
-    const result = await dbClient.run(
+  async update(id, device) {
+    const result = await this.dbClient.run(
       "UPDATE devices SET name = ?, type = ?, owner_id = ? WHERE id = ?",
       [device.name, device.type, device.ownerId, id],
     );
 
     return {
       changes: result.changes,
-      device: result.changes ? await findDetailedById(id) : null,
+      device: result.changes ? await this.findDetailedById(id) : null,
     };
   }
 
-  function deleteById(id) {
-    return dbClient.run("DELETE FROM devices WHERE id = ?", [id]);
+  deleteById(id) {
+    return this.dbClient.run("DELETE FROM devices WHERE id = ?", [id]);
   }
 
-  function clearOwnerByEmployeeId(employeeId) {
-    return dbClient.run(
+  clearOwnerByEmployeeId(employeeId) {
+    return this.dbClient.run(
       "UPDATE devices SET owner_id = NULL WHERE owner_id = ?",
       [employeeId],
     );
   }
-
-  return {
-    clearOwnerByEmployeeId,
-    create,
-    deleteById,
-    findAll,
-    findDetailedById,
-    update,
-  };
 }
 
-module.exports = { createDeviceRepository };
+module.exports = { DeviceRepository };

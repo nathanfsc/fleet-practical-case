@@ -1,36 +1,46 @@
 const { sendErrorResponse } = require("../utils/httpError");
+const { EmployeeService } = require("../services/employeeService");
 
-function createEmployeeController(employeeService) {
-  async function listEmployees(req, res) {
+class EmployeeController {
+  constructor() {
+    this.employeeService = new EmployeeService();
+    this.listEmployees = this.listEmployees.bind(this);
+    this.getEmployeeById = this.getEmployeeById.bind(this);
+    this.createEmployee = this.createEmployee.bind(this);
+    this.updateEmployee = this.updateEmployee.bind(this);
+    this.deleteEmployee = this.deleteEmployee.bind(this);
+  }
+
+  async listEmployees(req, res) {
     try {
-      const employees = await employeeService.listEmployees(req.query || {});
+      const employees = await this.employeeService.listEmployees(req.query || {});
       res.json(employees);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to fetch employees");
     }
   }
 
-  async function getEmployeeById(req, res) {
+  async getEmployeeById(req, res) {
     try {
-      const employee = await employeeService.getEmployeeById(req.params.id);
+      const employee = await this.employeeService.getEmployeeById(req.params.id);
       res.json(employee);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to fetch employee");
     }
   }
 
-  async function createEmployee(req, res) {
+  async createEmployee(req, res) {
     try {
-      const employee = await employeeService.createEmployee(req.body || {});
+      const employee = await this.employeeService.createEmployee(req.body || {});
       res.status(201).json(employee);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to create employee");
     }
   }
 
-  async function updateEmployee(req, res) {
+  async updateEmployee(req, res) {
     try {
-      const employee = await employeeService.updateEmployee(
+      const employee = await this.employeeService.updateEmployee(
         req.params.id,
         req.body || {},
       );
@@ -40,22 +50,14 @@ function createEmployeeController(employeeService) {
     }
   }
 
-  async function deleteEmployee(req, res) {
+  async deleteEmployee(req, res) {
     try {
-      const result = await employeeService.deleteEmployee(req.params.id);
+      const result = await this.employeeService.deleteEmployee(req.params.id);
       res.json(result);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to delete employee");
     }
   }
-
-  return {
-    createEmployee,
-    deleteEmployee,
-    getEmployeeById,
-    listEmployees,
-    updateEmployee,
-  };
 }
 
-module.exports = { createEmployeeController };
+module.exports = { EmployeeController };

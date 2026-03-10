@@ -1,5 +1,11 @@
-function createEmployeeRepository(dbClient) {
-  async function findAll(filters) {
+const { dbClient } = require("../database");
+
+class EmployeeRepository {
+  constructor() {
+    this.dbClient = dbClient;
+  }
+
+  async findAll(filters) {
     const role = filters.role || "";
     const search = filters.search || "";
     let sql = `
@@ -28,48 +34,40 @@ function createEmployeeRepository(dbClient) {
 
     sql += " GROUP BY e.id ORDER BY e.id DESC";
 
-    return dbClient.all(sql, params);
+    return this.dbClient.all(sql, params);
   }
 
-  function findById(id) {
-    return dbClient.get(
+  findById(id) {
+    return this.dbClient.get(
       "SELECT id, name, role, created_at FROM employees WHERE id = ?",
       [id],
     );
   }
 
-  async function create(employee) {
-    const result = await dbClient.run(
+  async create(employee) {
+    const result = await this.dbClient.run(
       "INSERT INTO employees (name, role) VALUES (?, ?)",
       [employee.name, employee.role],
     );
 
-    return findById(result.lastID);
+    return this.findById(result.lastID);
   }
 
-  async function update(id, employee) {
-    const result = await dbClient.run(
+  async update(id, employee) {
+    const result = await this.dbClient.run(
       "UPDATE employees SET name = ?, role = ? WHERE id = ?",
       [employee.name, employee.role, id],
     );
 
     return {
       changes: result.changes,
-      employee: result.changes ? await findById(id) : null,
+      employee: result.changes ? await this.findById(id) : null,
     };
   }
 
-  function deleteById(id) {
-    return dbClient.run("DELETE FROM employees WHERE id = ?", [id]);
+  deleteById(id) {
+    return this.dbClient.run("DELETE FROM employees WHERE id = ?", [id]);
   }
-
-  return {
-    create,
-    deleteById,
-    findAll,
-    findById,
-    update,
-  };
 }
 
-module.exports = { createEmployeeRepository };
+module.exports = { EmployeeRepository };

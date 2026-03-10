@@ -1,9 +1,11 @@
-function createHealthController() {
-  function getHealth(req, res) {
-    res.json({ ok: true, timestamp: new Date().toISOString() });
+class HealthController {
+  constructor() {
+    this.getHealth = this.getHealth.bind(this);
   }
 
-  return { getHealth };
+  getHealth(req, res) {
+    res.json({ ok: true, timestamp: new Date().toISOString() });
+  }
 }
 
-module.exports = { createHealthController };
+module.exports = { HealthController };

@@ -1,48 +1,50 @@
 const { sendErrorResponse } = require("../utils/httpError");
+const { DeviceService } = require("../services/deviceService");
 
-function createDeviceController(deviceService) {
-  async function listDevices(req, res) {
+class DeviceController {
+  constructor() {
+    this.deviceService = new DeviceService();
+    this.listDevices = this.listDevices.bind(this);
+    this.createDevice = this.createDevice.bind(this);
+    this.updateDevice = this.updateDevice.bind(this);
+    this.deleteDevice = this.deleteDevice.bind(this);
+  }
+
+  async listDevices(req, res) {
     try {
-      const devices = await deviceService.listDevices(req.query || {});
+      const devices = await this.deviceService.listDevices(req.query || {});
       res.json(devices);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to fetch devices");
     }
   }
 
-  async function createDevice(req, res) {
+  async createDevice(req, res) {
     try {
-      const device = await deviceService.createDevice(req.body || {});
+      const device = await this.deviceService.createDevice(req.body || {});
       res.status(201).json(device);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to create device");
     }
   }
 
-  async function updateDevice(req, res) {
+  async updateDevice(req, res) {
     try {
-      const device = await deviceService.updateDevice(req.params.id, req.body || {});
+      const device = await this.deviceService.updateDevice(req.params.id, req.body || {});
       res.json(device);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to update device");
     }
   }
 
-  async function deleteDevice(req, res) {
+  async deleteDevice(req, res) {
     try {
-      const result = await deviceService.deleteDevice(req.params.id);
+      const result = await this.deviceService.deleteDevice(req.params.id);
       res.json(result);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to delete device");
     }
   }
-
-  return {
-    createDevice,
-    deleteDevice,
-    listDevices,
-    updateDevice,
-  };
 }
 
-module.exports = { createDeviceController };
+module.exports = { DeviceController };
