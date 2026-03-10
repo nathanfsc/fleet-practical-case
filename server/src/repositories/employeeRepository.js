@@ -39,7 +39,7 @@ class EmployeeRepository {
 
   findById(id) {
     return this.dbClient.get(
-      "SELECT id, name, role, created_at FROM employees WHERE id = ?",
+      "SELECT id, name, role FROM employees WHERE id = ?",
       [id],
     );
   }
@@ -52,7 +52,7 @@ class EmployeeRepository {
     const placeholders = ids.map(() => "?").join(", ");
 
     return this.dbClient.all(
-      `SELECT id, name, role, created_at FROM employees WHERE id IN (${placeholders})`,
+      `SELECT id, name, role FROM employees WHERE id IN (${placeholders})`,
       ids,
     );
   }
