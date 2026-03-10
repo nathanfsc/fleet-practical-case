@@ -1,8 +1,123 @@
-import { render, screen } from '@testing-library/react';
-import App from '../App';
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import App from "../App";
+import { getDevices } from "../../features/devices/services/Devices.service";
+import { getEmployees } from "../../features/employees/services/Employees.service";
 
-test('renders app title', () => {
-  render(<App />);
-  const titleElement = screen.getByText(/fleet device manager/i);
-  expect(titleElement).toBeInTheDocument();
+jest.mock("../../features/devices/services/Devices.service", () => ({
+  getDevices: jest.fn(),
+}));
+
+jest.mock("../../features/employees/services/Employees.service", () => ({
+  getEmployees: jest.fn(),
+}));
+
+jest.mock("../../features/employees/components/EmployeesTab", () => {
+  return function MockEmployeesTab() {
+    return <div data-testid="employees-tab">Employees Tab</div>;
+  };
+});
+
+jest.mock("../../features/devices/components/DevicesTab", () => {
+  return function MockDevicesTab() {
+    return <div data-testid="devices-tab">Devices Tab</div>;
+  };
+});
+
+describe("App - navigation feature", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.localStorage.clear();
+    window.location.hash = "";
+    getEmployees.mockResolvedValue([]);
+    getDevices.mockResolvedValue([]);
+  });
+
+  it("uses hash as initial active tab", async () => {
+    window.location.hash = "#devices";
+
+    render(<App />);
+
+    expect(await screen.findByTestId("devices-tab")).toBeInTheDocument();
+    expect(screen.queryByTestId("employees-tab")).not.toBeInTheDocument();
+  });
+
+  it("persists selected tab in localStorage and hash", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Devices" }));
+
+    expect(window.location.hash).toBe("#devices");
+    await waitFor(() => {
+      expect(window.localStorage.getItem("fleet_active_tab")).toBe("devices");
+    });
+  });
+});
+
+describe("App - data loading feature", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.localStorage.clear();
+    window.location.hash = "";
+  });
+
+  it("loads employees and devices on startup", async () => {
+    getEmployees.mockResolvedValue([
+      { id: 1, name: "Alice", role: "Developer" },
+    ]);
+    getDevices.mockResolvedValue([
+      { id: 10, name: "Laptop", type: "Laptop", owner_id: 1 },
+    ]);
+
+    render(<App />);
+
+    await waitFor(() => expect(getEmployees).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(getDevices).toHaveBeenCalledTimes(1));
+  });
+});
+
+describe("App - dashboard and errors feature", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    window.localStorage.clear();
+    window.location.hash = "";
+  });
+
+  it("computes and renders KPI counters", async () => {
+    getEmployees.mockResolvedValue([
+      { id: 1, name: "Alice", role: "Developer" },
+      { id: 2, name: "Bob", role: "Support" },
+    ]);
+    getDevices.mockResolvedValue([
+      { id: 11, name: "MacBook Pro", type: "Laptop", owner_id: 1 },
+      { id: 12, name: "Monitor", type: "Display", owner_id: null },
+      { id: 13, name: "iPhone", type: "Mobile", owner_id: 2 },
+    ]);
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("article")[0]).toHaveTextContent("2");
+    });
+
+    expect(screen.getAllByRole("article")[1]).toHaveTextContent("3");
+    expect(screen.getAllByRole("article")[2]).toHaveTextContent("2");
+  });
+
+  it("shows and clears the error stack", async () => {
+    getEmployees.mockRejectedValue(new Error("Employees fetch failed"));
+    getDevices.mockRejectedValue(new Error("Devices fetch failed"));
+
+    render(<App />);
+
+    expect(await screen.findByText("Employees fetch failed")).toBeInTheDocument();
+    expect(await screen.findByText("Devices fetch failed")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByText("Employees fetch failed"),
+      ).not.toBeInTheDocument();
+    });
+  });
 });
