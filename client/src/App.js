@@ -1,23 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
+import EmployeesTab from "./components/EmployeesTab/EmployeesTab";
 
-const DEFAULT_EMPLOYEE_FORM = { name: "", role: "" };
 const DEFAULT_DEVICE_FORM = { name: "", type: "Laptop", ownerId: "" };
 
 function App() {
   const [activeTab, setActiveTab] = useState("employees");
   const [employees, setEmployees] = useState([]);
   const [devices, setDevices] = useState([]);
-  const [filteredEmployees, setFilteredEmployees] = useState([]);
   const [filteredDevices, setFilteredDevices] = useState([]);
-  const [roleFilter, setRoleFilter] = useState("");
   const [deviceTypeFilter, setDeviceTypeFilter] = useState("");
   const [deviceOwnerFilter, setDeviceOwnerFilter] = useState("");
-  const [employeeSearch, setEmployeeSearch] = useState("");
   const [deviceSearch, setDeviceSearch] = useState("");
-  const [employeeForm, setEmployeeForm] = useState(DEFAULT_EMPLOYEE_FORM);
   const [deviceForm, setDeviceForm] = useState(DEFAULT_DEVICE_FORM);
-  const [editingEmployeeId, setEditingEmployeeId] = useState(null);
   const [editingDeviceId, setEditingDeviceId] = useState(null);
   const [statusMessage, setStatusMessage] = useState("");
   const [errors, setErrors] = useState([]);
@@ -32,16 +27,6 @@ function App() {
   const [loadingOwnerNames, setLoadingOwnerNames] = useState(false);
   const [lastRefreshAt, setLastRefreshAt] = useState("");
 
-  const roleOptions = useMemo(() => {
-    const set = new Set();
-    employees.forEach((employee) => {
-      if (employee.role) {
-        set.add(employee.role);
-      }
-    });
-    return Array.from(set);
-  }, [employees]);
-
   const deviceTypeOptions = useMemo(() => {
     const set = new Set();
     devices.forEach((device) => {
@@ -54,7 +39,6 @@ function App() {
 
   useEffect(() => {
     const savedTab = window.localStorage.getItem("fleet_active_tab");
-    const savedRoleFilter = window.localStorage.getItem("fleet_role_filter");
     const savedTypeFilter = window.localStorage.getItem(
       "fleet_device_type_filter",
     );
@@ -63,9 +47,6 @@ function App() {
     );
     const hash = window.location.hash.replace("#", "");
 
-    if (savedRoleFilter !== null) {
-      setRoleFilter(savedRoleFilter);
-    }
     if (savedTypeFilter !== null) {
       setDeviceTypeFilter(savedTypeFilter);
     }
@@ -84,10 +65,6 @@ function App() {
     window.localStorage.setItem("fleet_active_tab", activeTab);
     window.location.hash = activeTab;
   }, [activeTab]);
-
-  useEffect(() => {
-    window.localStorage.setItem("fleet_role_filter", roleFilter);
-  }, [roleFilter]);
 
   useEffect(() => {
     window.localStorage.setItem("fleet_device_type_filter", deviceTypeFilter);
@@ -163,30 +140,6 @@ function App() {
         setLoadingOwnerNames(false);
       });
   }, [filteredDevices, activeTab]);
-
-  useEffect(() => {
-    let nextEmployees = [...employees];
-
-    if (roleFilter) {
-      nextEmployees = nextEmployees.filter(
-        (employee) => employee.role === roleFilter,
-      );
-    }
-    if (employeeSearch.trim()) {
-      const normalized = employeeSearch.toLowerCase();
-      nextEmployees = nextEmployees.filter((employee) => {
-        return (
-          String(employee.name || "")
-            .toLowerCase()
-            .includes(normalized) ||
-          String(employee.role || "")
-            .toLowerCase()
-            .includes(normalized)
-        );
-      });
-    }
-    setFilteredEmployees(nextEmployees);
-  }, [employees, roleFilter, employeeSearch]);
 
   useEffect(() => {
     let nextDevices = [...devices];
@@ -272,40 +225,6 @@ function App() {
     }
   }
 
-  async function submitEmployee(event) {
-    event.preventDefault();
-
-    const payload = {
-      name: employeeForm.name,
-      role: employeeForm.role,
-    };
-
-    const isEditing = Boolean(editingEmployeeId);
-    const url = isEditing
-      ? `/api/employees/${editingEmployeeId}`
-      : "/api/employees";
-    const method = isEditing ? "PUT" : "POST";
-
-    try {
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const json = await response.json();
-      if (!response.ok) {
-        throw new Error(json.message || "Could not save employee");
-      }
-      setStatusMessage(isEditing ? "Employee updated" : "Employee created");
-      setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
-      setEditingEmployeeId(null);
-      await fetchEmployees();
-      await fetchDevices();
-    } catch (error) {
-      setErrors((prev) => [...prev, `Employee save failed: ${error.message}`]);
-    }
-  }
-
   async function submitDevice(event) {
     event.preventDefault();
 
@@ -339,32 +258,6 @@ function App() {
     }
   }
 
-  async function handleDeleteEmployee(employeeId) {
-    const isConfirmed = window.confirm(
-      "Delete employee and unassign their devices?",
-    );
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      const response = await fetch(`/api/employees/${employeeId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        const json = await response.json();
-        throw new Error(json.message || "Could not delete employee");
-      }
-      setStatusMessage("Employee deleted");
-      await fetchEmployees();
-    } catch (error) {
-      setErrors((prev) => [
-        ...prev,
-        `Employee delete failed: ${error.message}`,
-      ]);
-    }
-  }
-
   async function handleDeleteDevice(deviceId) {
     const isConfirmed = window.confirm("Delete this device?");
     if (!isConfirmed) {
@@ -391,15 +284,6 @@ function App() {
     setErrors([]);
   }
 
-  function beginEmployeeEdit(employee) {
-    setActiveTab("employees");
-    setEditingEmployeeId(employee.id);
-    setEmployeeForm({
-      name: employee.name || "",
-      role: employee.role || "",
-    });
-  }
-
   function beginDeviceEdit(device) {
     setActiveTab("devices");
     setEditingDeviceId(device.id);
@@ -410,14 +294,13 @@ function App() {
     });
   }
 
-  function resetEmployeeForm() {
-    setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
-    setEditingEmployeeId(null);
-  }
-
   function resetDeviceForm() {
     setDeviceForm(DEFAULT_DEVICE_FORM);
     setEditingDeviceId(null);
+  }
+
+  function appendError(message) {
+    setErrors((prev) => [...prev, message]);
   }
 
   return (
@@ -495,115 +378,14 @@ function App() {
 
       <main className="app-main">
         {activeTab === "employees" ? (
-          <section className="panel">
-            <h2>{editingEmployeeId ? "Edit employee" : "Create employee"}</h2>
-            <form className="app-form" onSubmit={submitEmployee}>
-              <label>
-                Name
-                <input
-                  value={employeeForm.name}
-                  onChange={(event) =>
-                    setEmployeeForm((prev) => ({
-                      ...prev,
-                      name: event.target.value,
-                    }))
-                  }
-                  placeholder="Employee name"
-                  required
-                />
-              </label>
-              <label>
-                Role
-                <input
-                  value={employeeForm.role}
-                  onChange={(event) =>
-                    setEmployeeForm((prev) => ({
-                      ...prev,
-                      role: event.target.value,
-                    }))
-                  }
-                  placeholder="Developer"
-                  required
-                />
-              </label>
-              <div className="form-buttons">
-                <button type="submit">
-                  {editingEmployeeId ? "Update" : "Create"}
-                </button>
-                {editingEmployeeId ? (
-                  <button type="button" onClick={resetEmployeeForm}>
-                    Cancel edit
-                  </button>
-                ) : null}
-              </div>
-            </form>
-
-            <h3>Filters</h3>
-            <div className="filters">
-              <label>
-                Role filter
-                <select
-                  value={roleFilter}
-                  onChange={(event) => setRoleFilter(event.target.value)}
-                >
-                  <option value="">All</option>
-                  {roleOptions.map((role) => (
-                    <option key={role} value={role}>
-                      {role}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Search
-                <input
-                  value={employeeSearch}
-                  onChange={(event) => setEmployeeSearch(event.target.value)}
-                  placeholder="Search name / role"
-                />
-              </label>
-            </div>
-
-            <h3>Employee list {loadingEmployees ? "(loading...)" : ""}</h3>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Role</th>
-                  <th>Devices</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEmployees.map((employee) => (
-                  <tr key={employee.id}>
-                    <td>{employee.name}</td>
-                    <td>{employee.role}</td>
-                    <td>{employee.device_count || 0}</td>
-                    <td>
-                      <button
-                        type="button"
-                        onClick={() => beginEmployeeEdit(employee)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDeleteEmployee(employee.id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {filteredEmployees.length === 0 ? (
-                  <tr>
-                    <td colSpan="4">No employees found</td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </section>
+          <EmployeesTab
+            employees={employees}
+            loadingEmployees={loadingEmployees}
+            refreshEmployees={fetchEmployees}
+            refreshDevices={fetchDevices}
+            onStatusMessage={setStatusMessage}
+            onError={appendError}
+          />
         ) : null}
 
         {activeTab === "devices" ? (
