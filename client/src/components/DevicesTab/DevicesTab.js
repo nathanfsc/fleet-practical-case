@@ -13,13 +13,18 @@ function DevicesTab({
   onStatusMessage,
   onError,
 }) {
-  const [deviceTypeFilter, setDeviceTypeFilter] = useState("");
-  const [deviceOwnerFilter, setDeviceOwnerFilter] = useState("");
+  const [deviceTypeFilter, setDeviceTypeFilter] = useState(() => {
+    return window.localStorage.getItem("fleet_device_type_filter") ?? "";
+  });
+  const [deviceOwnerFilter, setDeviceOwnerFilter] = useState(() => {
+    return window.localStorage.getItem("fleet_device_owner_filter") ?? "";
+  });
   const [deviceSearch, setDeviceSearch] = useState("");
   const [deviceForm, setDeviceForm] = useState(DEFAULT_DEVICE_FORM);
   const [editingDeviceId, setEditingDeviceId] = useState(null);
   const [ownerNameById, setOwnerNameById] = useState({});
   const [loadingOwnerNames, setLoadingOwnerNames] = useState(false);
+  const isEditing = Boolean(editingDeviceId);
 
   const filteredDevices = useMemo(() => {
     let nextDevices = [...devices];
@@ -50,22 +55,6 @@ function DevicesTab({
 
     return nextDevices;
   }, [devices, deviceTypeFilter, deviceOwnerFilter, deviceSearch]);
-
-  useEffect(() => {
-    const savedTypeFilter = window.localStorage.getItem(
-      "fleet_device_type_filter",
-    );
-    const savedOwnerFilter = window.localStorage.getItem(
-      "fleet_device_owner_filter",
-    );
-
-    if (savedTypeFilter !== null) {
-      setDeviceTypeFilter(savedTypeFilter);
-    }
-    if (savedOwnerFilter !== null) {
-      setDeviceOwnerFilter(savedOwnerFilter);
-    }
-  }, []);
 
   useEffect(() => {
     window.localStorage.setItem("fleet_device_type_filter", deviceTypeFilter);
@@ -142,7 +131,6 @@ function DevicesTab({
       ownerId: deviceForm.ownerId || null,
     };
 
-    const isEditing = Boolean(editingDeviceId);
     const url = isEditing ? `/api/devices/${editingDeviceId}` : "/api/devices";
     const method = isEditing ? "PUT" : "POST";
 
@@ -204,7 +192,7 @@ function DevicesTab({
 
   return (
     <section className="panel">
-      <h2>{editingDeviceId ? "Edit device" : "Create device"}</h2>
+      <h2>{isEditing ? "Edit device" : "Create device"}</h2>
       <form className="app-form" onSubmit={submitDevice}>
         <label>
           Device name
@@ -258,8 +246,8 @@ function DevicesTab({
           </select>
         </label>
         <div className="form-buttons">
-          <button type="submit">{editingDeviceId ? "Update" : "Create"}</button>
-          {editingDeviceId ? (
+          <button type="submit">{isEditing ? "Update" : "Create"}</button>
+          {isEditing ? (
             <button type="button" onClick={resetDeviceForm}>
               Cancel edit
             </button>
