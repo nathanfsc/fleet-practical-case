@@ -4,6 +4,7 @@ const express = require("express");
 const { DeviceController } = require("./controllers/deviceController");
 const { EmployeeController } = require("./controllers/employeeController");
 const { HealthController } = require("./controllers/healthController");
+const { ProductController } = require("./controllers/productController");
 const { createApiRouter } = require("./routes");
 
 function createApp() {
@@ -12,6 +13,7 @@ function createApp() {
     deviceController: new DeviceController(),
     employeeController: new EmployeeController(),
     healthController: new HealthController(),
+    productController: new ProductController(),
   };
 
   app.use(cors());
