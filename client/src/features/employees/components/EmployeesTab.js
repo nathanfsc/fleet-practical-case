@@ -1,12 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
 import { EMPLOYEE_ROLE_OPTIONS } from "../Employees.constant";
-import {
-  createEmployee,
-  removeEmployee,
-  updateEmployee,
-} from "../services/Employees.service";
-
-const DEFAULT_EMPLOYEE_FORM = { name: "", role: "" };
+import { useEmployeeActions } from "../hooks/useEmployeeActions";
+import { useEmployeeFilters } from "../hooks/useEmployeeFilters";
+import { useEmployeeForm } from "../hooks/useEmployeeForm";
 
 function EmployeesTab({
   employees,
@@ -16,99 +11,31 @@ function EmployeesTab({
   onStatusMessage,
   onError,
 }) {
-  const [employeeForm, setEmployeeForm] = useState(DEFAULT_EMPLOYEE_FORM);
-  const [editingEmployeeId, setEditingEmployeeId] = useState(null);
-  const [roleFilter, setRoleFilter] = useState("");
-  const [employeeSearch, setEmployeeSearch] = useState("");
+  const {
+    roleFilter,
+    setRoleFilter,
+    employeeSearch,
+    setEmployeeSearch,
+    filteredEmployees,
+  } = useEmployeeFilters(employees);
 
-  const filteredEmployees = useMemo(() => {
-    let nextEmployees = [...employees];
+  const {
+    employeeForm,
+    setEmployeeForm,
+    editingEmployeeId,
+    beginEmployeeEdit,
+    resetEmployeeForm,
+  } = useEmployeeForm();
 
-    if (roleFilter) {
-      nextEmployees = nextEmployees.filter(
-        (employee) => employee.role === roleFilter,
-      );
-    }
-    if (employeeSearch.trim()) {
-      const normalized = employeeSearch.toLowerCase();
-      nextEmployees = nextEmployees.filter((employee) => {
-        return (
-          String(employee.name || "")
-            .toLowerCase()
-            .includes(normalized) ||
-          String(employee.role || "")
-            .toLowerCase()
-            .includes(normalized)
-        );
-      });
-    }
-
-    return nextEmployees;
-  }, [employees, roleFilter, employeeSearch]);
-
-  useEffect(() => {
-    const savedRoleFilter = window.localStorage.getItem("fleet_role_filter");
-    if (savedRoleFilter !== null) {
-      setRoleFilter(savedRoleFilter);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.localStorage.setItem("fleet_role_filter", roleFilter);
-  }, [roleFilter]);
-
-  async function submitEmployee(event) {
-    event.preventDefault();
-
-    const payload = {
-      name: employeeForm.name,
-      role: employeeForm.role,
-    };
-
-    const isEditing = Boolean(editingEmployeeId);
-
-    try {
-      isEditing
-        ? await updateEmployee({ employeeId: editingEmployeeId, payload })
-        : await createEmployee({ payload });
-
-      onStatusMessage(isEditing ? "Employee updated" : "Employee created");
-      setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
-      setEditingEmployeeId(null);
-      await refreshEmployees();
-      await refreshDevices();
-    } catch (error) {
-      onError(error.message);
-    }
-  }
-
-  async function handleDeleteEmployee(employeeId) {
-    const isConfirmed = window.confirm(
-      "Delete employee and unassign their devices?",
-    );
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await removeEmployee(employeeId);
-
-      onStatusMessage("Employee deleted");
-      await refreshEmployees();
-    } catch (error) {
-      onError(`Employee delete failed: ${error.message}`);
-    }
-  }
-
-  function beginEmployeeEdit(employee) {
-    setEditingEmployeeId(employee.id);
-    setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
-  }
-
-  function resetEmployeeForm() {
-    setEmployeeForm(DEFAULT_EMPLOYEE_FORM);
-    setEditingEmployeeId(null);
-  }
+  const { submitEmployee, handleDeleteEmployee } = useEmployeeActions({
+    editingEmployeeId,
+    employeeForm,
+    onError,
+    onStatusMessage,
+    refreshDevices,
+    refreshEmployees,
+    resetEmployeeForm,
+  });
 
   return (
     <section className="panel">

@@ -1,14 +1,8 @@
-//todo: fix les 10 000 calls au back a l'init
-import { useEffect, useMemo, useState } from "react";
 import { DEVICE_TYPE_OPTIONS } from "../Devices.constant";
-import {
-  createDevice,
-  removeDevice,
-  updateDevice,
-} from "../services/Devices.service";
-import { getEmployeeById } from "../../employees/services/Employees.service";
-
-const DEFAULT_DEVICE_FORM = { name: "", type: "Laptop", ownerId: "" };
+import { useDeviceActions } from "../hooks/useDeviceActions";
+import { useDeviceFilters } from "../hooks/useDeviceFilters";
+import { useDeviceForm } from "../hooks/useDeviceForm";
+import { useDeviceOwnerNames } from "../hooks/useDeviceOwnerNames";
 
 function DevicesTab({
   employees,
@@ -19,165 +13,36 @@ function DevicesTab({
   onStatusMessage,
   onError,
 }) {
-  const [deviceTypeFilter, setDeviceTypeFilter] = useState(() => {
-    return window.localStorage.getItem("fleet_device_type_filter") ?? "";
+  const {
+    deviceTypeFilter,
+    setDeviceTypeFilter,
+    deviceOwnerFilter,
+    setDeviceOwnerFilter,
+    deviceSearch,
+    setDeviceSearch,
+    filteredDevices,
+  } = useDeviceFilters(devices);
+
+  const {
+    deviceForm,
+    setDeviceForm,
+    editingDeviceId,
+    beginDeviceEdit,
+    resetDeviceForm,
+  } = useDeviceForm();
+
+  const { ownerNameById, loadingOwnerNames } =
+    useDeviceOwnerNames(filteredDevices);
+
+  const { isEditing, submitDevice, handleDeleteDevice } = useDeviceActions({
+    deviceForm,
+    editingDeviceId,
+    onError,
+    onStatusMessage,
+    refreshDevices,
+    refreshEmployees,
+    resetDeviceForm,
   });
-  const [deviceOwnerFilter, setDeviceOwnerFilter] = useState(() => {
-    return window.localStorage.getItem("fleet_device_owner_filter") ?? "";
-  });
-  const [deviceSearch, setDeviceSearch] = useState("");
-  const [deviceForm, setDeviceForm] = useState(DEFAULT_DEVICE_FORM);
-  const [editingDeviceId, setEditingDeviceId] = useState(null);
-  const [ownerNameById, setOwnerNameById] = useState({});
-  const [loadingOwnerNames, setLoadingOwnerNames] = useState(false);
-  const isEditing = Boolean(editingDeviceId);
-
-  const filteredDevices = useMemo(() => {
-    let nextDevices = [...devices];
-
-    if (deviceTypeFilter) {
-      nextDevices = nextDevices.filter(
-        (device) => device.type === deviceTypeFilter,
-      );
-    }
-    if (deviceOwnerFilter) {
-      nextDevices = nextDevices.filter(
-        (device) => Number(device.owner_id || "") === Number(deviceOwnerFilter),
-      );
-    }
-    if (deviceSearch.trim()) {
-      const normalized = deviceSearch.toLowerCase();
-      nextDevices = nextDevices.filter((device) => {
-        return (
-          String(device.name || "")
-            .toLowerCase()
-            .includes(normalized) ||
-          String(device.type || "")
-            .toLowerCase()
-            .includes(normalized)
-        );
-      });
-    }
-
-    return nextDevices;
-  }, [devices, deviceTypeFilter, deviceOwnerFilter, deviceSearch]);
-
-  useEffect(() => {
-    window.localStorage.setItem("fleet_device_type_filter", deviceTypeFilter);
-  }, [deviceTypeFilter]);
-
-  useEffect(() => {
-    window.localStorage.setItem("fleet_device_owner_filter", deviceOwnerFilter);
-  }, [deviceOwnerFilter]);
-
-  useEffect(() => {
-    const ownerIds = Array.from(
-      new Set(
-        filteredDevices
-          .map((device) => Number(device.owner_id))
-          .filter((ownerId) => Number.isInteger(ownerId) && ownerId > 0),
-      ),
-    );
-
-    if (ownerIds.length === 0) {
-      setOwnerNameById({});
-      return;
-    }
-
-    setLoadingOwnerNames(true);
-    setOwnerNameById({});
-
-    //todo: rajouter un getByIds
-    Promise.all(
-      ownerIds.map(async (ownerId) => {
-        try {
-          const employee = await getEmployeeById(ownerId);
-
-          if (!employee) {
-            return {
-              ownerId: String(ownerId),
-              ownerName: `Unknown employee #${ownerId}`,
-            };
-          }
-
-          return {
-            ownerId: String(ownerId),
-            ownerName: employee.name,
-          };
-        } catch (error) {
-          return {
-            ownerId: String(ownerId),
-            ownerName: `Unknown employee #${ownerId}`,
-          };
-        }
-      }),
-    )
-      .then((resolvedOwners) => {
-        const ownerMap = {};
-        resolvedOwners.forEach((owner) => {
-          ownerMap[owner.ownerId] = owner.ownerName;
-        });
-        setOwnerNameById(ownerMap);
-      })
-      .finally(() => {
-        setLoadingOwnerNames(false);
-      });
-  }, [filteredDevices]);
-
-  async function submitDevice(event) {
-    event.preventDefault();
-
-    const payload = {
-      name: deviceForm.name,
-      type: deviceForm.type,
-      ownerId: deviceForm.ownerId || null,
-    };
-
-    try {
-      isEditing
-        ? await updateDevice({ deviceId: editingDeviceId, payload })
-        : await createDevice({ payload });
-
-      onStatusMessage(isEditing ? "Device updated" : "Device created");
-      setDeviceForm(DEFAULT_DEVICE_FORM);
-      setEditingDeviceId(null);
-      await refreshDevices();
-      await refreshEmployees();
-    } catch (error) {
-      onError(error.message);
-    }
-  }
-
-  async function handleDeleteDevice(deviceId) {
-    const isConfirmed = window.confirm("Delete this device?");
-    if (!isConfirmed) {
-      return;
-    }
-
-    try {
-      await removeDevice(deviceId);
-
-      onStatusMessage("Device deleted");
-      await refreshDevices();
-      await refreshEmployees();
-    } catch (error) {
-      onError(error.message);
-    }
-  }
-
-  function beginDeviceEdit(device) {
-    setEditingDeviceId(device.id);
-    setDeviceForm({
-      name: device.name || "",
-      type: device.type,
-      ownerId: device.owner_id ? String(device.owner_id) : "",
-    });
-  }
-
-  function resetDeviceForm() {
-    setDeviceForm(DEFAULT_DEVICE_FORM);
-    setEditingDeviceId(null);
-  }
 
   return (
     <section className="panel">
