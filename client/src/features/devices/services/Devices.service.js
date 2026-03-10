@@ -9,13 +9,9 @@ export async function getDevices() {
   return Array.isArray(json) ? json : [];
 }
 
-export async function saveDevice({ deviceId, payload }) {
-  const isEditing = Boolean(deviceId);
-  const url = isEditing ? `/api/devices/${deviceId}` : "/api/devices";
-  const method = isEditing ? "PUT" : "POST";
-
-  const response = await fetch(url, {
-    method,
+export async function createDevice({ payload }) {
+  const response = await fetch("/api/devices", {
+    method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
@@ -23,7 +19,23 @@ export async function saveDevice({ deviceId, payload }) {
   const json = await response.json();
 
   if (!response.ok) {
-    throw new Error(json.message || "Could not save device");
+    throw new Error(`Could not save device, with error: ${json.message}`);
+  }
+
+  return json;
+}
+
+export async function updateDevice({ deviceId, payload }) {
+  const response = await fetch(`/api/devices/${deviceId}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await response.json();
+
+  if (!response.ok) {
+    throw new Error(`Could not update device, with error: ${json.message}`);
   }
 
   return json;

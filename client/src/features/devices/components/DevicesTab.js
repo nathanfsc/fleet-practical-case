@@ -1,7 +1,11 @@
 //todo: fix les 10 000 calls au back a l'init
 import { useEffect, useMemo, useState } from "react";
 import { DEVICE_TYPE_OPTIONS } from "../Devices.constant";
-import { removeDevice, saveDevice } from "../services/Devices.service";
+import {
+  createDevice,
+  removeDevice,
+  updateDevice,
+} from "../services/Devices.service";
 
 const DEFAULT_DEVICE_FORM = { name: "", type: "Laptop", ownerId: "" };
 
@@ -82,6 +86,7 @@ function DevicesTab({
     setLoadingOwnerNames(true);
     setOwnerNameById({});
 
+    //todo: rajouter un getByIds
     Promise.all(
       ownerIds.map(async (ownerId) => {
         try {
@@ -133,10 +138,9 @@ function DevicesTab({
     };
 
     try {
-      await saveDevice({
-        deviceId: editingDeviceId,
-        payload,
-      });
+      isEditing
+        ? await updateDevice({ deviceId: editingDeviceId, payload })
+        : await createDevice({ payload });
 
       onStatusMessage(isEditing ? "Device updated" : "Device created");
       setDeviceForm(DEFAULT_DEVICE_FORM);
@@ -144,7 +148,7 @@ function DevicesTab({
       await refreshDevices();
       await refreshEmployees();
     } catch (error) {
-      onError(`Device save failed: ${error.message}`);
+      onError(error.message);
     }
   }
 
@@ -161,7 +165,7 @@ function DevicesTab({
       await refreshDevices();
       await refreshEmployees();
     } catch (error) {
-      onError(`Device delete failed: ${error.message}`);
+      onError(error.message);
     }
   }
 

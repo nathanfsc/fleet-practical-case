@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import EmployeesTab from "../components/EmployeesTab/EmployeesTab";
+import EmployeesTab from "../features/employees/components/EmployeesTab";
 import DevicesTab from "../features/devices/components/DevicesTab";
 import { getDevices } from "../features/devices/services/Devices.service";
 
