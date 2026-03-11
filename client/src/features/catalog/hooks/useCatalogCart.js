@@ -140,6 +140,7 @@ export function useCatalogCart() {
   }
 
   return {
+    clearCart: () => setCartItems([]),
     cartItems,
     getCartQuantity,
     handleAddToCart,

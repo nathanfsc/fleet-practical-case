@@ -29,6 +29,12 @@ jest.mock("../../features/catalog/components/CatalogList", () => {
   };
 });
 
+jest.mock("../../features/orders/components/OrdersTab", () => {
+  return function MockOrdersTab() {
+    return <div data-testid="orders-tab">Orders Tab</div>;
+  };
+});
+
 describe("App - navigation feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -66,6 +72,16 @@ describe("App - navigation feature", () => {
     fireEvent.click(screen.getByRole("button", { name: "Catalog" }));
 
     expect(await screen.findByTestId("catalog-tab")).toBeInTheDocument();
+  });
+
+  it("renders the orders tab only when orders is active", async () => {
+    render(<App />);
+
+    expect(screen.queryByTestId("orders-tab")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Orders" }));
+
+    expect(await screen.findByTestId("orders-tab")).toBeInTheDocument();
   });
 });
 

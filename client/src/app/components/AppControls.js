@@ -3,6 +3,7 @@ import "./AppControls.css";
 import { CATALOG_TAB_NAME } from "../../features/catalog/Catalog.constant";
 import { DEVICES_TAB_NAME } from "../../features/devices/Devices.constant";
 import { EMPLOYEES_TAB_NAME } from "../../features/employees/Employees.constant";
+import { ORDERS_TAB_NAME } from "../../features/orders/Orders.constant";
 
 function AppControls({ activeTab, onRefresh, onTabChange }) {
   return (
@@ -33,6 +34,15 @@ function AppControls({ activeTab, onRefresh, onTabChange }) {
         type="button"
       >
         Catalog
+      </button>
+      <button
+        className={
+          activeTab === ORDERS_TAB_NAME ? "tab-button active" : "tab-button"
+        }
+        onClick={() => onTabChange(ORDERS_TAB_NAME)}
+        type="button"
+      >
+        Orders
       </button>
       <button type="button" onClick={onRefresh}>
         Manual refresh

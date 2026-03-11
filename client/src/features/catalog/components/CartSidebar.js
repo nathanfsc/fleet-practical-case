@@ -4,6 +4,8 @@ function getLineTotal(cartItem) {
 
 function CartSidebar({
   cartItems,
+  creatingOrder,
+  onCreateOrder,
   onRemoveCartItem,
   onUpdateQuantity,
   title,
@@ -72,6 +74,9 @@ function CartSidebar({
           <p className="cart-total">
             <strong>Total: {cartTotal}</strong>
           </p>
+          <button type="button" onClick={onCreateOrder} disabled={creatingOrder}>
+            {creatingOrder ? "Creating order..." : "Create order"}
+          </button>
         </>
       )}
     </aside>

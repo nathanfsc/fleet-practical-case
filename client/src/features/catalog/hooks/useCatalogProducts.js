@@ -4,16 +4,17 @@ import { getProductList } from "../services/catalogService";
 export function useCatalogProducts() {
   const [products, setProducts] = useState([]);
 
-  useEffect(() => {
-    async function fetchProducts() {
-      const nextProducts = await getProductList();
-      setProducts(nextProducts);
-    }
+  async function refreshProducts() {
+    const nextProducts = await getProductList();
+    setProducts(nextProducts);
+  }
 
-    fetchProducts();
+  useEffect(() => {
+    refreshProducts();
   }, []);
 
   return {
     products,
+    refreshProducts,
   };
 }

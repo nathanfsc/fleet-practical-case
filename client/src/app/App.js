@@ -12,6 +12,8 @@ import { EMPLOYEES_TAB_NAME } from "../features/employees/Employees.constant";
 import { DEVICES_TAB_NAME } from "../features/devices/Devices.constant";
 import CatalogTab from "../features/catalog/components/CatalogList";
 import { CATALOG_TAB_NAME } from "../features/catalog/Catalog.constant";
+import OrdersTab from "../features/orders/components/OrdersTab";
+import { ORDERS_TAB_NAME } from "../features/orders/Orders.constant";
 
 function App() {
   const { activeTab, setActiveTab } = useActiveTab();
@@ -79,7 +81,16 @@ function App() {
         ) : null}
 
         {activeTab === CATALOG_TAB_NAME ? (
-          <CatalogTab title="Catalog" cartTitle="Cart" />
+          <CatalogTab
+            cartTitle="Cart"
+            onError={appendError}
+            onStatusMessage={setStatusMessage}
+            title="Catalog"
+          />
+        ) : null}
+
+        {activeTab === ORDERS_TAB_NAME ? (
+          <OrdersTab title="Orders" />
         ) : null}
       </main>
     </div>

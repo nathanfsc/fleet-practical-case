@@ -1,17 +1,46 @@
+import { useState } from "react";
 import "./CatalogList.css";
 import CartSidebar from "./CartSidebar";
 import { useCatalogCart } from "../hooks/useCatalogCart";
 import { useCatalogProducts } from "../hooks/useCatalogProducts";
+import { createOrder } from "../../orders/services/ordersService";
 
-function CatalogTab({ title, cartTitle }) {
-  const { products } = useCatalogProducts();
+function CatalogTab({ cartTitle, onError, onStatusMessage, title }) {
+  const [creatingOrder, setCreatingOrder] = useState(false);
+  const { products, refreshProducts } = useCatalogProducts();
   const {
     cartItems,
+    clearCart,
     getCartQuantity,
     handleAddToCart,
     handleRemoveCartItem,
     handleUpdateQuantity,
   } = useCatalogCart();
+
+  async function handleCreateOrder() {
+    if (!cartItems.length || creatingOrder) {
+      return;
+    }
+
+    setCreatingOrder(true);
+
+    try {
+      await createOrder({
+        items: cartItems.map((cartItem) => ({
+          productVariantId: cartItem.variant_id,
+          quantity: cartItem.quantity,
+        })),
+      });
+
+      clearCart();
+      await refreshProducts();
+      onStatusMessage("Order created");
+    } catch (error) {
+      onError(error.message || "Failed to create order");
+    } finally {
+      setCreatingOrder(false);
+    }
+  }
 
   return (
     <div className="catalog-layout">
@@ -62,6 +91,8 @@ function CatalogTab({ title, cartTitle }) {
 
       <CartSidebar
         cartItems={cartItems}
+        creatingOrder={creatingOrder}
+        onCreateOrder={handleCreateOrder}
         onRemoveCartItem={handleRemoveCartItem}
         onUpdateQuantity={handleUpdateQuantity}
         title={cartTitle}
