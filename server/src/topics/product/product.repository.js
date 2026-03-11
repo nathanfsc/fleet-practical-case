@@ -59,6 +59,32 @@ class ProductRepository {
       [quantity, productVariantId, quantity],
     );
   }
+
+  decrementVariantStocks(items) {
+    if (!items.length) {
+      return Promise.resolve({ changes: 0, lastID: 0 });
+    }
+
+    const caseClauses = items
+      .map(() => "WHEN ? THEN stock - ?")
+      .join(" ");
+    const whereClauses = items
+      .map(() => "(id = ? AND stock >= ?)")
+      .join(" OR ");
+    const params = [
+      ...items.flatMap((item) => [item.productVariantId, item.quantity]),
+      ...items.flatMap((item) => [item.productVariantId, item.quantity]),
+    ];
+
+    return this.dbClient.run(
+      `
+        UPDATE product_variants
+        SET stock = CASE id ${caseClauses} ELSE stock END
+        WHERE ${whereClauses}
+      `,
+      params,
+    );
+  }
 }
 
 module.exports = { ProductRepository };

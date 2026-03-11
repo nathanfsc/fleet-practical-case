@@ -49,9 +49,9 @@ test("OrderService.createOrder rejects missing variants", async () => {
   );
 });
 
-test("OrderService.createOrder builds the order, updates stock, and commits", async () => {
+test("OrderService.createOrder builds the order, performs bulk writes, and commits", async () => {
   const dbCalls = [];
-  const createdItems = [];
+  const bulkCreateCalls = [];
   const service = new OrderService({
     databaseClient: {
       async run(sql) {
@@ -67,8 +67,8 @@ test("OrderService.createOrder builds the order, updates stock, and commits", as
         });
         return { lastID: 17 };
       },
-      async createOrderItem(payload) {
-        createdItems.push(payload);
+      async bulkCreateOrderItems(payload) {
+        bulkCreateCalls.push(payload);
       },
       async findByIdWithItems(orderId) {
         assert.equal(orderId, 17);
@@ -92,11 +92,8 @@ test("OrderService.createOrder builds the order, updates stock, and commits", as
       },
     },
     productRepository: {
-      async decrementVariantStock(payload) {
-        assert.deepEqual(payload, {
-          productVariantId: 5,
-          quantity: 3,
-        });
+      async decrementVariantStocks(payload) {
+        assert.deepEqual(payload, [{ productVariantId: 5, quantity: 3 }]);
         return { changes: 1 };
       },
       async findVariantsByIds(ids) {
@@ -121,7 +118,7 @@ test("OrderService.createOrder builds the order, updates stock, and commits", as
   });
 
   assert.deepEqual(dbCalls, ["BEGIN TRANSACTION", "COMMIT"]);
-  assert.deepEqual(createdItems, [
+  assert.deepEqual(bulkCreateCalls, [[
     {
       configuration: "Blue",
       lineTotal: 240,
@@ -133,7 +130,7 @@ test("OrderService.createOrder builds the order, updates stock, and commits", as
       sku: "BIKE-BLUE",
       unitPrice: 80,
     },
-  ]);
+  ]]);
   assert.deepEqual(result, {
     createdAt: "2026-03-11T00:00:00.000Z",
     id: 17,
@@ -153,4 +150,55 @@ test("OrderService.createOrder builds the order, updates stock, and commits", as
     ],
     totalAmount: 240,
   });
+});
+
+test("OrderService.createOrder rolls back when the bulk stock update is partial", async () => {
+  const dbCalls = [];
+  const service = new OrderService({
+    databaseClient: {
+      async run(sql) {
+        dbCalls.push(sql);
+        return {};
+      },
+    },
+    orderRepository: {
+      async createOrder() {
+        return { lastID: 17 };
+      },
+      async bulkCreateOrderItems() {
+        throw new Error("bulkCreateOrderItems should not be called");
+      },
+    },
+    productRepository: {
+      async decrementVariantStocks() {
+        return { changes: 0 };
+      },
+      async findVariantsByIds() {
+        return [
+          {
+            configuration: "Blue",
+            id: 8,
+            name: "Bike",
+            price: 80,
+            sku: "BIKE-BLUE",
+            stock: 4,
+            variant_id: 5,
+          },
+        ];
+      },
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      service.createOrder({
+        items: [{ productVariantId: 5, quantity: 3 }],
+      }),
+    {
+      message: "Insufficient stock for one or more items",
+      statusCode: 409,
+    },
+  );
+
+  assert.deepEqual(dbCalls, ["BEGIN TRANSACTION", "ROLLBACK"]);
 });

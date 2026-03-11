@@ -41,6 +41,44 @@ class OrderRepository {
     );
   }
 
+  bulkCreateOrderItems(orderItems) {
+    if (!orderItems.length) {
+      return Promise.resolve({ changes: 0, lastID: 0 });
+    }
+
+    const values = orderItems
+      .map(() => "(?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .join(", ");
+    const params = orderItems.flatMap((orderItem) => [
+      orderItem.orderId,
+      orderItem.productId,
+      orderItem.productVariantId,
+      orderItem.productName,
+      orderItem.configuration,
+      orderItem.sku,
+      orderItem.unitPrice,
+      orderItem.quantity,
+      orderItem.lineTotal,
+    ]);
+
+    return this.dbClient.run(
+      `
+        INSERT INTO order_items (
+          order_id,
+          product_id,
+          product_variant_id,
+          product_name,
+          configuration,
+          sku,
+          unit_price,
+          quantity,
+          line_total
+        ) VALUES ${values}
+      `,
+      params,
+    );
+  }
+
   findAllWithItems() {
     return this.dbClient.all(`
       SELECT

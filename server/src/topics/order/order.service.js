@@ -145,24 +145,23 @@ class OrderService {
         totalAmount,
       });
 
-      for (const orderItem of orderItems) {
-        const stockResult = await this.productRepository.decrementVariantStock({
+      const stockResult = await this.productRepository.decrementVariantStocks(
+        orderItems.map((orderItem) => ({
           productVariantId: orderItem.productVariantId,
           quantity: orderItem.quantity,
-        });
+        })),
+      );
 
-        if (!stockResult.changes) {
-          throw createHttpError(
-            409,
-            `Insufficient stock for ${orderItem.productName} (${orderItem.configuration})`,
-          );
-        }
+      if (stockResult.changes !== orderItems.length) {
+        throw createHttpError(409, "Insufficient stock for one or more items");
+      }
 
-        await this.orderRepository.createOrderItem({
+      await this.orderRepository.bulkCreateOrderItems(
+        orderItems.map((orderItem) => ({
           ...orderItem,
           orderId: orderResult.lastID,
-        });
-      }
+        })),
+      );
 
       await this.dbClient.run("COMMIT");
 
