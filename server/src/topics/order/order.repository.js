@@ -1,8 +1,8 @@
-const { dbClient } = require("../database");
+const { dbClient } = require("../../database");
 
 class OrderRepository {
-  constructor() {
-    this.dbClient = dbClient;
+  constructor({ databaseClient = dbClient } = {}) {
+    this.dbClient = databaseClient;
   }
 
   createOrder({ itemCount, totalAmount }) {

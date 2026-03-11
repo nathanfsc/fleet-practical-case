@@ -1,8 +1,8 @@
-const { dbClient } = require("../database");
+const { dbClient } = require("../../database");
 
 class EmployeeRepository {
-  constructor() {
-    this.dbClient = dbClient;
+  constructor({ databaseClient = dbClient } = {}) {
+    this.dbClient = databaseClient;
   }
 
   async findAll(filters) {

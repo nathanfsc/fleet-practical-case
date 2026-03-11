@@ -1,12 +1,15 @@
-const { createHttpError } = require("../utils/httpError");
-const { DeviceRepository } = require("../repositories/deviceRepository");
-const { EmployeeRepository } = require("../repositories/employeeRepository");
-const { optionalId, requireId, requireText } = require("../utils/validation");
+const { createHttpError } = require("../../utils/httpError");
+const { optionalId, requireId, requireText } = require("../../utils/validation");
+const { EmployeeRepository } = require("../employee/employee.repository");
+const { DeviceRepository } = require("./device.repository");
 
 class DeviceService {
-  constructor() {
-    this.deviceRepository = new DeviceRepository();
-    this.employeeRepository = new EmployeeRepository();
+  constructor({
+    deviceRepository = new DeviceRepository(),
+    employeeRepository = new EmployeeRepository(),
+  } = {}) {
+    this.deviceRepository = deviceRepository;
+    this.employeeRepository = employeeRepository;
   }
 
   async validateOwner(ownerId) {

@@ -1,9 +1,9 @@
-const { sendErrorResponse } = require("../utils/httpError");
-const { DeviceService } = require("../services/deviceService");
+const { sendErrorResponse } = require("../../utils/httpError");
+const { DeviceService } = require("./device.service");
 
 class DeviceController {
-  constructor() {
-    this.deviceService = new DeviceService();
+  constructor({ deviceService = new DeviceService() } = {}) {
+    this.deviceService = deviceService;
     this.listDevices = this.listDevices.bind(this);
     this.createDevice = this.createDevice.bind(this);
     this.updateDevice = this.updateDevice.bind(this);
@@ -30,7 +30,10 @@ class DeviceController {
 
   async updateDevice(req, res) {
     try {
-      const device = await this.deviceService.updateDevice(req.params.id, req.body || {});
+      const device = await this.deviceService.updateDevice(
+        req.params.id,
+        req.body || {},
+      );
       res.json(device);
     } catch (error) {
       sendErrorResponse(res, error, "Failed to update device");

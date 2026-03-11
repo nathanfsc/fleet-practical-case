@@ -1,9 +1,9 @@
-const { sendErrorResponse } = require("../utils/httpError");
-const { ProductService } = require("../services/productService");
+const { sendErrorResponse } = require("../../utils/httpError");
+const { ProductService } = require("./product.service");
 
 class ProductController {
-  constructor() {
-    this.productService = new ProductService();
+  constructor({ productService = new ProductService() } = {}) {
+    this.productService = productService;
     this.listProducts = this.listProducts.bind(this);
   }
 

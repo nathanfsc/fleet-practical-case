@@ -1,12 +1,15 @@
-const { createHttpError } = require("../utils/httpError");
-const { DeviceRepository } = require("../repositories/deviceRepository");
-const { EmployeeRepository } = require("../repositories/employeeRepository");
-const { requireId, requireIds, requireText } = require("../utils/validation");
+const { createHttpError } = require("../../utils/httpError");
+const { requireId, requireIds, requireText } = require("../../utils/validation");
+const { DeviceRepository } = require("../device/device.repository");
+const { EmployeeRepository } = require("./employee.repository");
 
 class EmployeeService {
-  constructor() {
-    this.deviceRepository = new DeviceRepository();
-    this.employeeRepository = new EmployeeRepository();
+  constructor({
+    employeeRepository = new EmployeeRepository(),
+    deviceRepository = new DeviceRepository(),
+  } = {}) {
+    this.deviceRepository = deviceRepository;
+    this.employeeRepository = employeeRepository;
   }
 
   async listEmployees(query) {

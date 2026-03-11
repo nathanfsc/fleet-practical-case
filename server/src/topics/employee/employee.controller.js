@@ -1,9 +1,9 @@
-const { sendErrorResponse } = require("../utils/httpError");
-const { EmployeeService } = require("../services/employeeService");
+const { sendErrorResponse } = require("../../utils/httpError");
+const { EmployeeService } = require("./employee.service");
 
 class EmployeeController {
-  constructor() {
-    this.employeeService = new EmployeeService();
+  constructor({ employeeService = new EmployeeService() } = {}) {
+    this.employeeService = employeeService;
     this.listEmployees = this.listEmployees.bind(this);
     this.getEmployeesByIds = this.getEmployeesByIds.bind(this);
     this.getEmployeeById = this.getEmployeeById.bind(this);

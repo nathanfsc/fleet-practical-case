@@ -1,3 +1,14 @@
+.catalog-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+  align-items: start;
+}
+
+.catalog-main {
+  min-width: 0;
+}
+
 .cart-list {
   margin: 0;
   padding-left: 18px;
@@ -14,7 +25,7 @@
   gap: 8px;
 }
 
-.cart-line p {
+.cart-line-text {
   margin: 8px 0;
 }
 
@@ -26,17 +37,6 @@
 
 .cart-total {
   margin: 16px 0 0;
-}
-
-.catalog-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 12px;
-  align-items: start;
-}
-
-.catalog-main {
-  min-width: 0;
 }
 
 @media (max-width: 800px) {

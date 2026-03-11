@@ -38,9 +38,9 @@ function CartSidebar({
                   </button>
                 </div>
                 {cartItem.configuration ? (
-                  <p>Configuration: {cartItem.configuration}</p>
+                  <p className="cart-line-text">Configuration: {cartItem.configuration}</p>
                 ) : null}
-                <p>Unit price: {cartItem.price}</p>
+                <p className="cart-line-text">Unit price: {cartItem.price}</p>
                 <div className="cart-quantity-controls">
                   <button
                     type="button"
@@ -67,7 +67,7 @@ function CartSidebar({
                     +
                   </button>
                 </div>
-                <p>Line total: {getLineTotal(cartItem)}</p>
+                <p className="cart-line-text">Line total: {getLineTotal(cartItem)}</p>
               </li>
             ))}
           </ul>

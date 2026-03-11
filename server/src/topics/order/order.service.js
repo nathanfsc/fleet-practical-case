@@ -1,12 +1,17 @@
-const { dbClient } = require("../database");
-const { OrderRepository } = require("../repositories/orderRepository");
-const { ProductRepository } = require("../repositories/productRepository");
-const { createHttpError } = require("../utils/httpError");
+const { dbClient } = require("../../database");
+const { createHttpError } = require("../../utils/httpError");
+const { ProductRepository } = require("../product/product.repository");
+const { OrderRepository } = require("./order.repository");
 
 class OrderService {
-  constructor() {
-    this.orderRepository = new OrderRepository();
-    this.productRepository = new ProductRepository();
+  constructor({
+    orderRepository = new OrderRepository(),
+    productRepository = new ProductRepository(),
+    databaseClient = dbClient,
+  } = {}) {
+    this.dbClient = databaseClient;
+    this.orderRepository = orderRepository;
+    this.productRepository = productRepository;
   }
 
   normalizeOrderItems(items) {
@@ -132,7 +137,7 @@ class OrderService {
       itemCount += requestedItem.quantity;
     });
 
-    await dbClient.run("BEGIN TRANSACTION");
+    await this.dbClient.run("BEGIN TRANSACTION");
 
     try {
       const orderResult = await this.orderRepository.createOrder({
@@ -159,12 +164,12 @@ class OrderService {
         });
       }
 
-      await dbClient.run("COMMIT");
+      await this.dbClient.run("COMMIT");
 
       const rows = await this.orderRepository.findByIdWithItems(orderResult.lastID);
       return this.groupOrderRows(rows)[0] || null;
     } catch (error) {
-      await dbClient.run("ROLLBACK");
+      await this.dbClient.run("ROLLBACK");
       throw error;
     }
   }

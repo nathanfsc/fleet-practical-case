@@ -1,9 +1,9 @@
-const { sendErrorResponse } = require("../utils/httpError");
-const { OrderService } = require("../services/orderService");
+const { sendErrorResponse } = require("../../utils/httpError");
+const { OrderService } = require("./order.service");
 
 class OrderController {
-  constructor() {
-    this.orderService = new OrderService();
+  constructor({ orderService = new OrderService() } = {}) {
+    this.orderService = orderService;
     this.createOrder = this.createOrder.bind(this);
     this.listOrders = this.listOrders.bind(this);
   }
