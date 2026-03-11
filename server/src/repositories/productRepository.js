@@ -12,6 +12,7 @@ class ProductRepository {
         p.name,
         pv.id AS variant_id,
         pv.configuration,
+        pv.sku,
         pv.stock,
         (p.base_price + pv.price_delta) AS price
       FROM products p
@@ -19,10 +20,44 @@ class ProductRepository {
       ORDER BY p.id DESC
     `;
 
-    const rows = await this.dbClient.all(sql);
+    return this.dbClient.all(sql);
+  }
 
-    console.log("COUCOU -> ", rows);
-    return rows;
+  findVariantsByIds(variantIds) {
+    if (!variantIds.length) {
+      return [];
+    }
+
+    const placeholders = variantIds.map(() => "?").join(", ");
+
+    return this.dbClient.all(
+      `
+        SELECT
+          p.id,
+          p.name,
+          pv.id AS variant_id,
+          pv.configuration,
+          pv.sku,
+          pv.stock,
+          (p.base_price + pv.price_delta) AS price
+        FROM products p
+        INNER JOIN product_variants pv ON p.id = pv.product_id
+        WHERE pv.id IN (${placeholders})
+      `,
+      variantIds,
+    );
+  }
+
+  decrementVariantStock({ productVariantId, quantity }) {
+    return this.dbClient.run(
+      `
+        UPDATE product_variants
+        SET stock = stock - ?
+        WHERE id = ?
+        AND stock >= ?
+      `,
+      [quantity, productVariantId, quantity],
+    );
   }
 }
 

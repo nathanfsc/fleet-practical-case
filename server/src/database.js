@@ -80,6 +80,7 @@ async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS products (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'active',
       base_price REAL NOT NULL,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
@@ -89,10 +90,38 @@ async function initializeDatabase() {
     CREATE TABLE IF NOT EXISTS product_variants (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       product_id INTEGER NOT NULL,
-      price_delta REAL NOT NULL,
       configuration TEXT NOT NULL,
+      sku TEXT NOT NULL UNIQUE,
+      price_delta REAL NOT NULL DEFAULT 0,
+      stock INTEGER NOT NULL DEFAULT 0,
       created_at TEXT DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+    )
+  `);
+
+  await dbClient.run(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      total_amount REAL NOT NULL,
+      item_count INTEGER NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dbClient.run(`
+    CREATE TABLE IF NOT EXISTS order_items (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id INTEGER NOT NULL,
+      product_id INTEGER NOT NULL,
+      product_variant_id INTEGER NOT NULL,
+      product_name TEXT NOT NULL,
+      configuration TEXT NOT NULL,
+      sku TEXT NOT NULL,
+      unit_price REAL NOT NULL,
+      quantity INTEGER NOT NULL,
+      line_total REAL NOT NULL,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
     )
   `);
 }
