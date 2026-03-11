@@ -10,6 +10,8 @@ const { createOrderRouter } = require("./order/order.routes");
 const { OrderController } = require("./order/order.controller");
 const { createProductRouter } = require("./product/product.routes");
 const { ProductController } = require("./product/product.controller");
+const { createSharedRouter } = require("./shared/shared.routes");
+const { SharedController } = require("./shared/shared.controller");
 
 function createApiRouter() {
   const router = express.Router();
@@ -19,6 +21,7 @@ function createApiRouter() {
     healthController: new HealthController(),
     orderController: new OrderController(),
     productController: new ProductController(),
+    sharedController: new SharedController(),
   };
 
   router.use(createHealthRouter(controllers.healthController));
@@ -26,6 +29,7 @@ function createApiRouter() {
   router.use(createDeviceRouter(controllers.deviceController));
   router.use(createProductRouter(controllers.productController));
   router.use(createOrderRouter(controllers.orderController));
+  router.use(createSharedRouter(controllers.sharedController));
 
   return router;
 }
