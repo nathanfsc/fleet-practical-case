@@ -8,10 +8,10 @@ export function useEmployeeActions({
   editingEmployeeId,
   employeeForm,
   onError,
+  onRemoveEmployeeFromState,
   onStatusMessage,
-  refreshDevices,
+  onUpsertEmployeeInState,
   refreshDashboardCounts,
-  refreshEmployees,
   resetEmployeeForm,
 }) {
   async function submitEmployee(event) {
@@ -25,14 +25,13 @@ export function useEmployeeActions({
     const isEditing = Boolean(editingEmployeeId);
 
     try {
-      isEditing
+      const savedEmployee = isEditing
         ? await updateEmployee({ employeeId: editingEmployeeId, payload })
         : await createEmployee({ payload });
 
       onStatusMessage(isEditing ? "Employee updated" : "Employee created");
       resetEmployeeForm();
-      await refreshEmployees();
-      await refreshDevices();
+      onUpsertEmployeeInState(savedEmployee);
       await refreshDashboardCounts();
     } catch (error) {
       onError(error.message);
@@ -51,8 +50,7 @@ export function useEmployeeActions({
       await removeEmployee(employeeId);
 
       onStatusMessage("Employee deleted");
-      await refreshEmployees();
-      await refreshDevices();
+      onRemoveEmployeeFromState(employeeId);
       await refreshDashboardCounts();
     } catch (error) {
       onError(`Employee delete failed: ${error.message}`);

@@ -74,12 +74,15 @@ describe("App - navigation feature", () => {
   it("persists selected tab in localStorage and hash", async () => {
     render(<App />);
 
+    await waitFor(() => expect(getDashboardCounts).toHaveBeenCalledTimes(1));
+
     fireEvent.click(screen.getByRole("button", { name: "Devices" }));
 
     expect(window.location.hash).toBe("#devices");
     await waitFor(() => {
       expect(window.localStorage.getItem("fleet_active_tab")).toBe("devices");
     });
+    expect(getDashboardCounts).toHaveBeenCalledTimes(1);
   });
 
   it("renders the catalog tab only when catalog is active", async () => {

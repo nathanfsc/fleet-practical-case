@@ -8,8 +8,29 @@ import {
   getDashboardCounts,
 } from "../services/dashboardService";
 
+const EMPLOYEES_STORAGE_KEY = "fleet_employees_cache";
+
+function getInitialEmployees() {
+  if (typeof window === "undefined") {
+    return [];
+  }
+
+  try {
+    const rawEmployees = window.localStorage.getItem(EMPLOYEES_STORAGE_KEY);
+
+    if (!rawEmployees) {
+      return [];
+    }
+
+    const parsedEmployees = JSON.parse(rawEmployees);
+    return Array.isArray(parsedEmployees) ? parsedEmployees : [];
+  } catch {
+    return [];
+  }
+}
+
 export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
-  const [employees, setEmployees] = useState([]);
+  const [employees, setEmployees] = useState(getInitialEmployees);
   const [devices, setDevices] = useState([]);
   const [dashboardState, setDashboardState] = useState(EMPTY_DASHBOARD_COUNTS);
   const [loadingEmployees, setLoadingEmployees] = useState(false);
@@ -98,7 +119,64 @@ export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
     );
   }
 
+  function upsertEmployeeInState(employee) {
+    if (!employee?.id) {
+      return;
+    }
+
+    setEmployees((currentEmployees) => {
+      const existingEmployee = currentEmployees.find(
+        (currentEmployee) => currentEmployee.id === employee.id,
+      );
+      const nextEmployee = {
+        ...(existingEmployee || {}),
+        ...employee,
+        device_count:
+          employee.device_count ?? existingEmployee?.device_count ?? 0,
+      };
+
+      if (!existingEmployee) {
+        return [nextEmployee, ...currentEmployees];
+      }
+
+      return currentEmployees.map((currentEmployee) =>
+        currentEmployee.id === employee.id ? nextEmployee : currentEmployee,
+      );
+    });
+  }
+
+  function removeEmployeeFromState(employeeId) {
+    const normalizedEmployeeId = Number(employeeId);
+
+    if (!normalizedEmployeeId) {
+      return;
+    }
+
+    setEmployees((currentEmployees) =>
+      currentEmployees.filter(
+        (employee) => employee.id !== normalizedEmployeeId,
+      ),
+    );
+  }
+
   async function refreshActiveTab(tab = activeTab) {
+    onRefreshStart();
+
+    const requests = [];
+
+    if (tab === EMPLOYEES_TAB_NAME) {
+      requests.push(refreshEmployees({ clearErrors: false }));
+    }
+
+    if (tab === DEVICES_TAB_NAME) {
+      requests.push(refreshEmployees({ clearErrors: false }));
+      requests.push(refreshDevices({ clearErrors: false }));
+    }
+
+    await Promise.all(requests);
+  }
+
+  async function refreshAppData(tab = activeTab) {
     onRefreshStart();
 
     const requests = [refreshDashboardCounts({ clearErrors: false })];
@@ -116,6 +194,21 @@ export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
   }
 
   useEffect(() => {
+    refreshDashboardCounts();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    window.localStorage.setItem(
+      EMPLOYEES_STORAGE_KEY,
+      JSON.stringify(employees),
+    );
+  }, [employees]);
+
+  useEffect(() => {
     refreshActiveTab(activeTab);
   }, [activeTab]);
 
@@ -129,8 +222,11 @@ export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
     refreshDashboardCounts,
     refreshEmployees,
     refreshDevices,
+    upsertEmployeeInState,
+    removeEmployeeFromState,
     upsertDeviceInState,
     removeDeviceFromState,
     refreshActiveTab,
+    refreshAppData,
   };
 }

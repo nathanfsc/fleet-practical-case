@@ -6,8 +6,8 @@ import { useEmployeeForm } from "../hooks/useEmployeeForm";
 function EmployeesTab({
   employees,
   loadingEmployees,
-  refreshEmployees,
-  refreshDevices,
+  onRemoveEmployeeFromState,
+  onUpsertEmployeeInState,
   refreshDashboardCounts,
   onStatusMessage,
   onError,
@@ -35,10 +35,10 @@ function EmployeesTab({
     editingEmployeeId,
     employeeForm,
     onError,
+    onRemoveEmployeeFromState,
     onStatusMessage,
-    refreshDevices,
+    onUpsertEmployeeInState,
     refreshDashboardCounts,
-    refreshEmployees,
     resetEmployeeForm,
   });
 

@@ -33,7 +33,8 @@ function setupEmployeesTab(overrides = {}) {
       },
     ],
     loadingEmployees: false,
-    refreshEmployees: jest.fn().mockResolvedValue(undefined),
+    onRemoveEmployeeFromState: jest.fn(),
+    onUpsertEmployeeInState: jest.fn(),
     refreshDevices: jest.fn().mockResolvedValue(undefined),
     onStatusMessage: jest.fn(),
     onError: jest.fn(),
@@ -77,8 +78,12 @@ describe("EmployeesTab - mutation feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     window.localStorage.clear();
-    createEmployee.mockResolvedValue({ id: 10 });
-    updateEmployee.mockResolvedValue({ id: 1 });
+    createEmployee.mockResolvedValue({ id: 10, name: "Charlie", role: QA });
+    updateEmployee.mockResolvedValue({
+      id: 1,
+      name: "Alice Updated",
+      role: PRODUCT_MANAGER,
+    });
     removeEmployee.mockResolvedValue(undefined);
   });
 
@@ -102,8 +107,12 @@ describe("EmployeesTab - mutation feature", () => {
       });
     });
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee created");
-    expect(setup.refreshEmployees).toHaveBeenCalledTimes(1);
-    expect(setup.refreshDevices).toHaveBeenCalledTimes(1);
+    expect(setup.onUpsertEmployeeInState).toHaveBeenCalledWith({
+      id: 10,
+      name: "Charlie",
+      role: QA,
+    });
+    expect(setup.refreshDevices).not.toHaveBeenCalled();
   });
 
   it("updates the selected employee", async () => {
@@ -133,9 +142,15 @@ describe("EmployeesTab - mutation feature", () => {
     });
 
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee updated");
+    expect(setup.onUpsertEmployeeInState).toHaveBeenCalledWith({
+      id: 1,
+      name: "Alice Updated",
+      role: PRODUCT_MANAGER,
+    });
+    expect(setup.refreshDevices).not.toHaveBeenCalled();
   });
 
-  it("deletes an employee and refreshes devices so unassigned devices are reloaded", async () => {
+  it("deletes an employee without refreshing devices", async () => {
     const confirmSpy = jest.spyOn(window, "confirm").mockReturnValue(true);
     const setup = setupEmployeesTab();
 
@@ -146,8 +161,8 @@ describe("EmployeesTab - mutation feature", () => {
     });
 
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Employee deleted");
-    expect(setup.refreshEmployees).toHaveBeenCalledTimes(1);
-    expect(setup.refreshDevices).toHaveBeenCalledTimes(1);
+    expect(setup.onRemoveEmployeeFromState).toHaveBeenCalledWith(1);
+    expect(setup.refreshDevices).not.toHaveBeenCalled();
 
     confirmSpy.mockRestore();
   });
