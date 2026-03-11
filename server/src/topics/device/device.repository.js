@@ -15,8 +15,10 @@ class DeviceRepository {
         d.name,
         d.type,
         d.owner_id,
+        e.name AS owner_name,
         d.created_at
       FROM devices d
+      LEFT JOIN employees e ON e.id = d.owner_id
       WHERE 1 = 1
     `;
     const params = [];

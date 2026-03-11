@@ -29,6 +29,8 @@ function App() {
     refreshDashboardCounts,
     refreshEmployees,
     refreshDevices,
+    upsertDeviceInState,
+    removeDeviceFromState,
     refreshActiveTab,
   } = useFleetDashboard({
     activeTab,
@@ -76,9 +78,9 @@ function App() {
             editTitle="Edit device"
             listTitle="Device list"
             loadingDevices={loadingDevices}
-            refreshDevices={refreshDevices}
-            refreshEmployees={refreshEmployees}
+            onRemoveDeviceFromState={removeDeviceFromState}
             refreshDashboardCounts={refreshDashboardCounts}
+            onUpsertDeviceInState={upsertDeviceInState}
             onStatusMessage={setStatusMessage}
             onError={appendError}
           />

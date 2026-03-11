@@ -25,33 +25,6 @@ export async function getEmployeeById(employeeId) {
   return json;
 }
 
-export async function getEmployeesByIds(employeeIds) {
-  if (!Array.isArray(employeeIds) || employeeIds.length === 0) {
-    return [];
-  }
-
-  const ids = Array.from(
-    new Set(
-      employeeIds.filter(
-        (employeeId) => Number.isInteger(employeeId) && employeeId > 0,
-      ),
-    ),
-  );
-
-  if (ids.length === 0) {
-    return [];
-  }
-
-  const response = await fetch(`/api/employees/by-ids?ids=${ids.join(",")}`);
-  const json = await response.json();
-
-  if (!response.ok) {
-    throw new Error(`Could not get employees with error: ${json.message}`);
-  }
-
-  return Array.isArray(json) ? json : [];
-}
-
 export async function createEmployee({ payload }) {
   const response = await fetch("/api/employees", {
     method: "POST",

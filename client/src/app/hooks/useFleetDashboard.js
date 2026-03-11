@@ -66,6 +66,38 @@ export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
     }
   }
 
+  function upsertDeviceInState(device) {
+    if (!device?.id) {
+      return;
+    }
+
+    setDevices((currentDevices) => {
+      const existingDeviceIndex = currentDevices.findIndex(
+        (currentDevice) => currentDevice.id === device.id,
+      );
+
+      if (existingDeviceIndex === -1) {
+        return [device, ...currentDevices];
+      }
+
+      return currentDevices.map((currentDevice) =>
+        currentDevice.id === device.id ? device : currentDevice,
+      );
+    });
+  }
+
+  function removeDeviceFromState(deviceId) {
+    const normalizedDeviceId = Number(deviceId);
+
+    if (!normalizedDeviceId) {
+      return;
+    }
+
+    setDevices((currentDevices) =>
+      currentDevices.filter((device) => device.id !== normalizedDeviceId),
+    );
+  }
+
   async function refreshActiveTab(tab = activeTab) {
     onRefreshStart();
 
@@ -97,6 +129,8 @@ export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
     refreshDashboardCounts,
     refreshEmployees,
     refreshDevices,
+    upsertDeviceInState,
+    removeDeviceFromState,
     refreshActiveTab,
   };
 }

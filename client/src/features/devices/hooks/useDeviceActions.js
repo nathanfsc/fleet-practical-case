@@ -8,10 +8,10 @@ export function useDeviceActions({
   deviceForm,
   editingDeviceId,
   onError,
+  onRemoveDeviceFromState,
   onStatusMessage,
-  refreshDevices,
   refreshDashboardCounts,
-  refreshEmployees,
+  onUpsertDeviceInState,
   resetDeviceForm,
 }) {
   const isEditing = Boolean(editingDeviceId);
@@ -26,14 +26,13 @@ export function useDeviceActions({
     };
 
     try {
-      isEditing
+      const savedDevice = isEditing
         ? await updateDevice({ deviceId: editingDeviceId, payload })
         : await createDevice({ payload });
 
       onStatusMessage(isEditing ? "Device updated" : "Device created");
       resetDeviceForm();
-      await refreshDevices();
-      await refreshEmployees();
+      onUpsertDeviceInState(savedDevice);
       await refreshDashboardCounts();
     } catch (error) {
       onError(
@@ -54,8 +53,7 @@ export function useDeviceActions({
       await removeDevice(deviceId);
 
       onStatusMessage("Device deleted");
-      await refreshDevices();
-      await refreshEmployees();
+      onRemoveDeviceFromState(deviceId);
       await refreshDashboardCounts();
     } catch (error) {
       onError(`Device delete failed: ${error.message}`);

@@ -1,5 +1,5 @@
 const { createHttpError } = require("../../utils/httpError");
-const { requireId, requireIds, requireText } = require("../../utils/validation");
+const { requireId, requireText } = require("../../utils/validation");
 const { DeviceRepository } = require("../device/device.repository");
 const { EmployeeRepository } = require("./employee.repository");
 
@@ -28,11 +28,6 @@ class EmployeeService {
     }
 
     return employee;
-  }
-
-  async getEmployeesByIds(employeeIds) {
-    const ids = requireIds(employeeIds, "employee ids");
-    return this.employeeRepository.findByIds(ids);
   }
 
   async createEmployee(payload) {

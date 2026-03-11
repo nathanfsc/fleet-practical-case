@@ -5,7 +5,6 @@ import {
   removeDevice,
   updateDevice,
 } from "../../services/devicesService";
-import { getEmployeesByIds } from "../../../employees/services/employeesService";
 import { DEVICE_TYPE_OPTIONS } from "../../Devices.constant";
 
 const [MOBILE, PERIPHERAL, DISPLAY, LAPTOP] = DEVICE_TYPE_OPTIONS;
@@ -14,10 +13,6 @@ jest.mock("../../services/devicesService", () => ({
   createDevice: jest.fn(),
   removeDevice: jest.fn(),
   updateDevice: jest.fn(),
-}));
-
-jest.mock("../../../employees/services/employeesService", () => ({
-  getEmployeesByIds: jest.fn(),
 }));
 
 function setupDevicesTab(overrides = {}) {
@@ -32,17 +27,20 @@ function setupDevicesTab(overrides = {}) {
         name: "MacBook Pro",
         type: LAPTOP,
         owner_id: 1,
+        owner_name: "Alice",
       },
       {
         id: 11,
         name: "Dell Monitor",
         type: DISPLAY,
         owner_id: 2,
+        owner_name: "Bob",
       },
-      { id: 12, name: "iPhone", type: MOBILE, owner_id: 2 },
+      { id: 12, name: "iPhone", type: MOBILE, owner_id: 2, owner_name: "Bob" },
     ],
     loadingDevices: false,
-    refreshDevices: jest.fn().mockResolvedValue(undefined),
+    onRemoveDeviceFromState: jest.fn(),
+    onUpsertDeviceInState: jest.fn(),
     refreshEmployees: jest.fn().mockResolvedValue(undefined),
     onStatusMessage: jest.fn(),
     onError: jest.fn(),
@@ -59,54 +57,30 @@ describe("DevicesTab - owner resolution feature", () => {
     window.localStorage.clear();
   });
 
-  it("resolves owner names with unique owner ids", async () => {
-    getEmployeesByIds.mockResolvedValue([
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-    ]);
-
+  it("renders owner names from the device payload", async () => {
     setupDevicesTab();
 
-    await waitFor(() => expect(getEmployeesByIds).toHaveBeenCalledTimes(1));
-    expect(getEmployeesByIds).toHaveBeenCalledWith([1, 2]);
-
-    expect(
-      await screen.findByRole("cell", { name: "Alice" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "Alice" })).toBeInTheDocument();
     expect(screen.getAllByRole("cell", { name: "Bob" }).length).toBe(2);
   });
 
-  it("shows resolving labels while owner names are being fetched", async () => {
-    getEmployeesByIds.mockImplementation(
-      () => new Promise(() => undefined),
-    );
-
+  it("shows unassigned when no owner is set", async () => {
     setupDevicesTab({
       devices: [
         {
           id: 10,
-          name: "MacBook Pro",
-          type: LAPTOP,
-          owner_id: 1,
-        },
-        {
-          id: 11,
           name: "Desk Phone",
           type: MOBILE,
           owner_id: null,
+          owner_name: null,
         },
       ],
     });
 
-    await waitFor(() => {
-      expect(screen.getByRole("cell", { name: "resolving..." })).toBeInTheDocument();
-    });
     expect(screen.getByRole("cell", { name: "Unassigned" })).toBeInTheDocument();
   });
 
-  it("falls back to unknown owner label on lookup failure", async () => {
-    getEmployeesByIds.mockRejectedValue(new Error("lookup failed"));
-
+  it("falls back to unknown owner label when owner name is missing", async () => {
     setupDevicesTab({
       devices: [
         {
@@ -114,37 +88,12 @@ describe("DevicesTab - owner resolution feature", () => {
           name: "MacBook Pro",
           type: LAPTOP,
           owner_id: 99,
+          owner_name: null,
         },
       ],
     });
 
-    expect(await screen.findByText("Unknown employee #99")).toBeInTheDocument();
-  });
-
-  it("falls back to unknown owner label when the batch response misses ids", async () => {
-    getEmployeesByIds.mockResolvedValue([{ id: 1, name: "Alice" }]);
-
-    setupDevicesTab({
-      devices: [
-        {
-          id: 10,
-          name: "MacBook Pro",
-          type: LAPTOP,
-          owner_id: 1,
-        },
-        {
-          id: 11,
-          name: "Dell Monitor",
-          type: DISPLAY,
-          owner_id: 99,
-        },
-      ],
-    });
-
-    expect(
-      await screen.findByRole("cell", { name: "Alice" }),
-    ).toBeInTheDocument();
-    expect(await screen.findByText("Unknown employee #99")).toBeInTheDocument();
+    expect(screen.getByText("Unknown employee #99")).toBeInTheDocument();
   });
 });
 
@@ -152,12 +101,20 @@ describe("DevicesTab - mutation feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     window.localStorage.clear();
-    getEmployeesByIds.mockResolvedValue([
-      { id: 1, name: "Alice" },
-      { id: 2, name: "Bob" },
-    ]);
-    createDevice.mockResolvedValue({ id: 99 });
-    updateDevice.mockResolvedValue({ id: 10 });
+    createDevice.mockResolvedValue({
+      id: 99,
+      name: "ThinkPad",
+      type: LAPTOP,
+      owner_id: 1,
+      owner_name: "Alice",
+    });
+    updateDevice.mockResolvedValue({
+      id: 10,
+      name: "MacBook Pro M3",
+      type: LAPTOP,
+      owner_id: 1,
+      owner_name: "Alice",
+    });
     removeDevice.mockResolvedValue(undefined);
   });
 
@@ -186,8 +143,14 @@ describe("DevicesTab - mutation feature", () => {
     });
 
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Device created");
-    expect(setup.refreshDevices).toHaveBeenCalledTimes(1);
-    expect(setup.refreshEmployees).toHaveBeenCalledTimes(1);
+    expect(setup.onUpsertDeviceInState).toHaveBeenCalledWith({
+      id: 99,
+      name: "ThinkPad",
+      type: LAPTOP,
+      owner_id: 1,
+      owner_name: "Alice",
+    });
+    expect(setup.refreshEmployees).not.toHaveBeenCalled();
   });
 
   it("updates an existing device", async () => {
@@ -211,6 +174,14 @@ describe("DevicesTab - mutation feature", () => {
     });
 
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Device updated");
+    expect(setup.onUpsertDeviceInState).toHaveBeenCalledWith({
+      id: 10,
+      name: "MacBook Pro M3",
+      type: LAPTOP,
+      owner_id: 1,
+      owner_name: "Alice",
+    });
+    expect(setup.refreshEmployees).not.toHaveBeenCalled();
   });
 
   it("deletes a device when confirmation is accepted", async () => {
@@ -224,8 +195,8 @@ describe("DevicesTab - mutation feature", () => {
     });
 
     expect(setup.onStatusMessage).toHaveBeenCalledWith("Device deleted");
-    expect(setup.refreshDevices).toHaveBeenCalledTimes(1);
-    expect(setup.refreshEmployees).toHaveBeenCalledTimes(1);
+    expect(setup.onRemoveDeviceFromState).toHaveBeenCalledWith(10);
+    expect(setup.refreshEmployees).not.toHaveBeenCalled();
 
     confirmSpy.mockRestore();
   });

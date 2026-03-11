@@ -2,14 +2,13 @@ import { DEVICE_TYPE_OPTIONS } from "../Devices.constant";
 import { useDeviceActions } from "../hooks/useDeviceActions";
 import { useDeviceFilters } from "../hooks/useDeviceFilters";
 import { useDeviceForm } from "../hooks/useDeviceForm";
-import { useDeviceOwnerNames } from "../hooks/useDeviceOwnerNames";
 
 function DevicesTab({
   employees,
   devices,
   loadingDevices,
-  refreshDevices,
-  refreshEmployees,
+  onRemoveDeviceFromState,
+  onUpsertDeviceInState,
   refreshDashboardCounts,
   onStatusMessage,
   onError,
@@ -35,30 +34,24 @@ function DevicesTab({
     resetDeviceForm,
   } = useDeviceForm();
 
-  const { ownerNameById, loadingOwnerNames } =
-    useDeviceOwnerNames(filteredDevices);
-
   const { isEditing, submitDevice, handleDeleteDevice } = useDeviceActions({
     deviceForm,
     editingDeviceId,
     onError,
+    onRemoveDeviceFromState,
     onStatusMessage,
-    refreshDevices,
     refreshDashboardCounts,
-    refreshEmployees,
+    onUpsertDeviceInState,
     resetDeviceForm,
   });
 
   function getOwnerLabel(device) {
-    const ownerId = String(device.owner_id || "");
-    const resolvedOwnerName = ownerNameById[ownerId];
-
-    if (resolvedOwnerName) {
-      return resolvedOwnerName;
+    if (device.owner_name) {
+      return device.owner_name;
     }
 
-    if (loadingOwnerNames && device.owner_id) {
-      return "resolving...";
+    if (device.owner_id) {
+      return `Unknown employee #${device.owner_id}`;
     }
 
     return "Unassigned";
@@ -174,8 +167,7 @@ function DevicesTab({
 
       {listTitle ? (
         <h3>
-          {listTitle} {loadingDevices ? "(loading...)" : ""}{" "}
-          {loadingOwnerNames ? "(resolving owners...)" : ""}
+          {listTitle} {loadingDevices ? "(loading...)" : ""}
         </h3>
       ) : null}
       <table>
