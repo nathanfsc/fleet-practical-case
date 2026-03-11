@@ -1,6 +1,8 @@
 import "./AppDashboard.css";
 
-function AppDashboard({ dashboardState }) {
+function AppDashboard({
+  dashboardState = { totalEmployees: 0, totalDevices: 0, ownedDevices: 0 },
+}) {
   return (
     <section className="app-kpis">
       <article>
@@ -12,8 +14,8 @@ function AppDashboard({ dashboardState }) {
         <strong>{dashboardState.totalDevices}</strong>
       </article>
       <article>
-        <h3>Assigned devices</h3>
-        <strong>{dashboardState.assignedDevices}</strong>
+        <h3>Owned devices</h3>
+        <strong>{dashboardState.ownedDevices}</strong>
       </article>
     </section>
   );

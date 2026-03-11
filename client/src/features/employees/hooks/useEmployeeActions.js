@@ -10,6 +10,7 @@ export function useEmployeeActions({
   onError,
   onStatusMessage,
   refreshDevices,
+  refreshDashboardCounts,
   refreshEmployees,
   resetEmployeeForm,
 }) {
@@ -32,6 +33,7 @@ export function useEmployeeActions({
       resetEmployeeForm();
       await refreshEmployees();
       await refreshDevices();
+      await refreshDashboardCounts();
     } catch (error) {
       onError(error.message);
     }
@@ -51,6 +53,7 @@ export function useEmployeeActions({
       onStatusMessage("Employee deleted");
       await refreshEmployees();
       await refreshDevices();
+      await refreshDashboardCounts();
     } catch (error) {
       onError(`Employee delete failed: ${error.message}`);
     }

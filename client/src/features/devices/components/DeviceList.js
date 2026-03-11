@@ -10,6 +10,7 @@ function DevicesTab({
   loadingDevices,
   refreshDevices,
   refreshEmployees,
+  refreshDashboardCounts,
   onStatusMessage,
   onError,
   createTitle,
@@ -43,6 +44,7 @@ function DevicesTab({
     onError,
     onStatusMessage,
     refreshDevices,
+    refreshDashboardCounts,
     refreshEmployees,
     resetDeviceForm,
   });

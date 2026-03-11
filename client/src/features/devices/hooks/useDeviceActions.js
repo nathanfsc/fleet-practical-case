@@ -10,6 +10,7 @@ export function useDeviceActions({
   onError,
   onStatusMessage,
   refreshDevices,
+  refreshDashboardCounts,
   refreshEmployees,
   resetDeviceForm,
 }) {
@@ -33,6 +34,7 @@ export function useDeviceActions({
       resetDeviceForm();
       await refreshDevices();
       await refreshEmployees();
+      await refreshDashboardCounts();
     } catch (error) {
       onError(
         isEditing
@@ -54,6 +56,7 @@ export function useDeviceActions({
       onStatusMessage("Device deleted");
       await refreshDevices();
       await refreshEmployees();
+      await refreshDashboardCounts();
     } catch (error) {
       onError(`Device delete failed: ${error.message}`);
     }

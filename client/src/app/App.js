@@ -26,10 +26,12 @@ function App() {
     loadingDevices,
     dashboardState,
     lastRefreshAt,
+    refreshDashboardCounts,
     refreshEmployees,
     refreshDevices,
-    refreshAll,
+    refreshActiveTab,
   } = useFleetDashboard({
+    activeTab,
     onError: appendError,
     onRefreshStart: clearErrors,
   });
@@ -40,7 +42,7 @@ function App() {
       <AppDashboard dashboardState={dashboardState} />
       <AppControls
         activeTab={activeTab}
-        onRefresh={refreshAll}
+        onRefresh={() => refreshActiveTab()}
         onTabChange={setActiveTab}
       />
       <AppNotifications
@@ -60,6 +62,7 @@ function App() {
             loadingEmployees={loadingEmployees}
             refreshEmployees={refreshEmployees}
             refreshDevices={refreshDevices}
+            refreshDashboardCounts={refreshDashboardCounts}
             onStatusMessage={setStatusMessage}
             onError={appendError}
           />
@@ -75,6 +78,7 @@ function App() {
             loadingDevices={loadingDevices}
             refreshDevices={refreshDevices}
             refreshEmployees={refreshEmployees}
+            refreshDashboardCounts={refreshDashboardCounts}
             onStatusMessage={setStatusMessage}
             onError={appendError}
           />

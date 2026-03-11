@@ -8,6 +8,7 @@ function EmployeesTab({
   loadingEmployees,
   refreshEmployees,
   refreshDevices,
+  refreshDashboardCounts,
   onStatusMessage,
   onError,
   createTitle,
@@ -36,6 +37,7 @@ function EmployeesTab({
     onError,
     onStatusMessage,
     refreshDevices,
+    refreshDashboardCounts,
     refreshEmployees,
     resetEmployeeForm,
   });
