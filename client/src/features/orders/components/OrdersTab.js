@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import { getOrders } from "../services/ordersService";
 
-function OrdersTab({ title }) {
+function OrdersTab({ refreshVersion, title }) {
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    async function fetchOrders() {
-      const nextOrders = await getOrders();
-      setOrders(nextOrders);
-    }
+  async function refreshOrders() {
+    const nextOrders = await getOrders();
+    setOrders(nextOrders);
+  }
 
-    fetchOrders();
-  }, []);
+  useEffect(() => {
+    refreshOrders();
+  }, [refreshVersion]);
 
   return (
     <section className="panel">

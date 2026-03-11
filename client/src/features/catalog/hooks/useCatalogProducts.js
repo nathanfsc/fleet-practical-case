@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { getProductList } from "../services/catalogService";
 
-export function useCatalogProducts() {
+export function useCatalogProducts({ refreshVersion = 0 } = {}) {
   const [products, setProducts] = useState([]);
 
   async function refreshProducts() {
@@ -11,7 +11,7 @@ export function useCatalogProducts() {
 
   useEffect(() => {
     refreshProducts();
-  }, []);
+  }, [refreshVersion]);
 
   return {
     products,

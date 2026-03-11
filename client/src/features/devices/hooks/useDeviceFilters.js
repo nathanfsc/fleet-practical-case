@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  getLocalStorageItem,
+  setLocalStorageItem,
+} from "../../../shared/localStorageService";
 
 const DEVICE_TYPE_FILTER_STORAGE_KEY = "fleet_device_type_filter";
 const DEVICE_OWNER_FILTER_STORAGE_KEY = "fleet_device_owner_filter";
 
 export function useDeviceFilters(devices) {
   const [deviceTypeFilter, setDeviceTypeFilter] = useState(() => {
-    return window.localStorage.getItem(DEVICE_TYPE_FILTER_STORAGE_KEY) ?? "";
+    return getLocalStorageItem(DEVICE_TYPE_FILTER_STORAGE_KEY) ?? "";
   });
   const [deviceOwnerFilter, setDeviceOwnerFilter] = useState(() => {
-    return window.localStorage.getItem(DEVICE_OWNER_FILTER_STORAGE_KEY) ?? "";
+    return getLocalStorageItem(DEVICE_OWNER_FILTER_STORAGE_KEY) ?? "";
   });
   const [deviceSearch, setDeviceSearch] = useState("");
 
@@ -45,17 +49,11 @@ export function useDeviceFilters(devices) {
   }, [devices, deviceTypeFilter, deviceOwnerFilter, deviceSearch]);
 
   useEffect(() => {
-    window.localStorage.setItem(
-      DEVICE_TYPE_FILTER_STORAGE_KEY,
-      deviceTypeFilter,
-    );
+    setLocalStorageItem(DEVICE_TYPE_FILTER_STORAGE_KEY, deviceTypeFilter);
   }, [deviceTypeFilter]);
 
   useEffect(() => {
-    window.localStorage.setItem(
-      DEVICE_OWNER_FILTER_STORAGE_KEY,
-      deviceOwnerFilter,
-    );
+    setLocalStorageItem(DEVICE_OWNER_FILTER_STORAGE_KEY, deviceOwnerFilter);
   }, [deviceOwnerFilter]);
 
   return {

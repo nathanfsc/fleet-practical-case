@@ -1,60 +1,52 @@
 import { useEffect, useState } from "react";
+import {
+  getJsonLocalStorageItem,
+  setJsonLocalStorageItem,
+} from "../../../shared/localStorageService";
 
 const CART_STORAGE_KEY = "fleet_cart";
 
 function getStoredCartItems() {
-  const savedCart = window.localStorage.getItem(CART_STORAGE_KEY);
+  const parsedCart = getJsonLocalStorageItem(CART_STORAGE_KEY, []);
 
-  if (!savedCart) {
+  if (!Array.isArray(parsedCart)) {
     return [];
   }
 
-  try {
-    const parsedCart = JSON.parse(savedCart);
+  const cartItems = [];
 
-    if (!Array.isArray(parsedCart)) {
-      return [];
+  parsedCart.forEach((item) => {
+    const cartItemVariantId = item.variant_id ? String(item.variant_id) : null;
+    const rawQuantity = Number(item.quantity) || 1;
+
+    if (!cartItemVariantId) {
+      return;
     }
 
-    const cartItems = [];
+    const existingCartItem = cartItems.find(
+      (cartItem) => cartItem.cartItemVariantId === cartItemVariantId,
+    );
 
-    parsedCart.forEach((item) => {
-      const cartItemVariantId = item.variant_id
-        ? String(item.variant_id)
-        : null;
-      const rawQuantity = Number(item.quantity) || 1;
+    if (!existingCartItem) {
+      cartItems.push({
+        ...item,
+        cartItemVariantId,
+        quantity: rawQuantity,
+      });
+      return;
+    }
 
-      if (!cartItemVariantId) {
-        return;
-      }
+    existingCartItem.quantity += rawQuantity;
+  });
 
-      const existingCartItem = cartItems.find(
-        (cartItem) => cartItem.cartItemVariantId === cartItemVariantId,
-      );
-
-      if (!existingCartItem) {
-        cartItems.push({
-          ...item,
-          cartItemVariantId,
-          quantity: rawQuantity,
-        });
-        return;
-      }
-
-      existingCartItem.quantity += rawQuantity;
-    });
-
-    return cartItems;
-  } catch {
-    return [];
-  }
+  return cartItems;
 }
 
 export function useCatalogCart() {
   const [cartItems, setCartItems] = useState(getStoredCartItems);
 
   useEffect(() => {
-    window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    setJsonLocalStorageItem(CART_STORAGE_KEY, cartItems);
   }, [cartItems]);
 
   function handleAddToCart(product) {

@@ -4,6 +4,5 @@ export async function getProductList() {
     headers: { "Content-Type": "application/json" },
   });
   const products = await response.json();
-  console.log("COUCOU -> ", response);
   return products;
 }

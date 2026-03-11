@@ -4,6 +4,10 @@ import { EMPLOYEES_TAB_NAME } from "../../features/employees/Employees.constant"
 import { getDevices } from "../../features/devices/services/devicesService";
 import { getEmployees } from "../../features/employees/services/employeesService";
 import {
+  getJsonLocalStorageItem,
+  setJsonLocalStorageItem,
+} from "../../shared/localStorageService";
+import {
   EMPTY_DASHBOARD_COUNTS,
   getDashboardCounts,
 } from "../services/dashboardService";
@@ -11,22 +15,8 @@ import {
 const EMPLOYEES_STORAGE_KEY = "fleet_employees_cache";
 
 function getInitialEmployees() {
-  if (typeof window === "undefined") {
-    return [];
-  }
-
-  try {
-    const rawEmployees = window.localStorage.getItem(EMPLOYEES_STORAGE_KEY);
-
-    if (!rawEmployees) {
-      return [];
-    }
-
-    const parsedEmployees = JSON.parse(rawEmployees);
-    return Array.isArray(parsedEmployees) ? parsedEmployees : [];
-  } catch {
-    return [];
-  }
+  const storedEmployees = getJsonLocalStorageItem(EMPLOYEES_STORAGE_KEY, []);
+  return Array.isArray(storedEmployees) ? storedEmployees : [];
 }
 
 export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
@@ -198,14 +188,7 @@ export function useFleetDashboard({ activeTab, onError, onRefreshStart }) {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    window.localStorage.setItem(
-      EMPLOYEES_STORAGE_KEY,
-      JSON.stringify(employees),
-    );
+    setJsonLocalStorageItem(EMPLOYEES_STORAGE_KEY, employees);
   }, [employees]);
 
   useEffect(() => {

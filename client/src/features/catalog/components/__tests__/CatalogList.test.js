@@ -7,6 +7,11 @@ import {
 } from "@testing-library/react";
 import CatalogTab from "../CatalogList";
 import { getProductList } from "../../services/catalogService";
+import {
+  clearLocalStorage,
+  getJsonLocalStorageItem,
+  setJsonLocalStorageItem,
+} from "../../../../shared/localStorageService";
 
 jest.mock("../../services/catalogService", () => ({
   getProductList: jest.fn(),
@@ -19,7 +24,7 @@ function setupCatalogTab(overrides = {}) {
 describe("CatalogTab - cart feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
   });
 
   it("merges duplicate additions into one line with an updated quantity", async () => {
@@ -50,7 +55,7 @@ describe("CatalogTab - cart feature", () => {
     expect(within(cartSidebar).getByText("Qty: 2")).toBeInTheDocument();
     expect(within(cartSidebar).getByText("Line total: 4998")).toBeInTheDocument();
     expect(within(cartSidebar).getByText("Total: 4998")).toBeInTheDocument();
-    expect(JSON.parse(window.localStorage.getItem("fleet_cart"))).toEqual([
+    expect(getJsonLocalStorageItem("fleet_cart", [])).toEqual([
       {
         cartItemVariantId: "2",
         id: 1,
@@ -74,15 +79,41 @@ describe("CatalogTab - cart feature", () => {
     });
   });
 
+  it("refreshes products when refreshVersion changes", async () => {
+    getProductList.mockResolvedValue([]);
+
+    const { rerender } = render(<CatalogTab refreshVersion={0} />);
+
+    await waitFor(() => {
+      expect(getProductList).toHaveBeenCalledTimes(1);
+    });
+
+    rerender(<CatalogTab refreshVersion={1} />);
+
+    await waitFor(() => {
+      expect(getProductList).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("loads products only once on mount when refreshVersion is already set", async () => {
+    getProductList.mockResolvedValue([]);
+
+    render(<CatalogTab refreshVersion={1} />);
+
+    await waitFor(() => {
+      expect(getProductList).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it("loads the cart sidebar from localStorage", async () => {
-    window.localStorage.setItem(
+    setJsonLocalStorageItem(
       "fleet_cart",
-      JSON.stringify([
+      [
         { id: 1, name: "MacBook Pro", variant_id: 2, configuration: "16GB", price: "2499" },
         { id: 1, name: "MacBook Pro", variant_id: 2, configuration: "16GB", price: "2499" },
         { id: 1, name: "MacBook Pro", variant_id: 3, configuration: "32GB", price: "2999" },
         { id: 2, name: "USB-C Dock", variant_id: 4, price: "199", quantity: 3 },
-      ]),
+      ],
     );
     getProductList.mockResolvedValue([]);
 
@@ -131,7 +162,7 @@ describe("CatalogTab - cart feature", () => {
     );
 
     expect(within(cartSidebar).getByText("No products in cart")).toBeInTheDocument();
-    expect(JSON.parse(window.localStorage.getItem("fleet_cart"))).toEqual([]);
+    expect(getJsonLocalStorageItem("fleet_cart", [])).toEqual([]);
   });
 
   it("does not allow adding more than available stock", async () => {

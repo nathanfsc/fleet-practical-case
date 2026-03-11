@@ -6,6 +6,7 @@ import {
   updateDevice,
 } from "../../services/devicesService";
 import { DEVICE_TYPE_OPTIONS } from "../../Devices.constant";
+import { clearLocalStorage } from "../../../../shared/localStorageService";
 
 const [MOBILE, PERIPHERAL, DISPLAY, LAPTOP] = DEVICE_TYPE_OPTIONS;
 
@@ -54,7 +55,7 @@ function setupDevicesTab(overrides = {}) {
 describe("DevicesTab - owner resolution feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
   });
 
   it("renders owner names from the device payload", async () => {
@@ -100,7 +101,7 @@ describe("DevicesTab - owner resolution feature", () => {
 describe("DevicesTab - mutation feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
     createDevice.mockResolvedValue({
       id: 99,
       name: "ThinkPad",

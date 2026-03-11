@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "./App.css";
 import AppControls from "./components/AppControls";
 import AppDashboard from "./components/AppDashboard";
@@ -17,6 +18,7 @@ import { ORDERS_TAB_NAME } from "../features/orders/Orders.constant";
 
 function App() {
   const { activeTab, setActiveTab } = useActiveTab();
+  const [manualRefreshVersion, setManualRefreshVersion] = useState(0);
   const { statusMessage, setStatusMessage, errors, clearErrors, appendError } =
     useAppFeedback();
   const {
@@ -41,13 +43,18 @@ function App() {
     onRefreshStart: clearErrors,
   });
 
+  function handleManualRefresh() {
+    setManualRefreshVersion((currentVersion) => currentVersion + 1);
+    refreshAppData();
+  }
+
   return (
     <div className="app-page">
       <AppHeader />
       <AppDashboard dashboardState={dashboardState} />
       <AppControls
         activeTab={activeTab}
-        onRefresh={() => refreshAppData()}
+        onRefresh={handleManualRefresh}
         onTabChange={setActiveTab}
       />
       <AppNotifications
@@ -93,13 +100,17 @@ function App() {
           <CatalogTab
             cartTitle="Cart"
             onError={appendError}
+            refreshVersion={manualRefreshVersion}
             onStatusMessage={setStatusMessage}
             title="Catalog"
           />
         ) : null}
 
         {activeTab === ORDERS_TAB_NAME ? (
-          <OrdersTab title="Orders" />
+          <OrdersTab
+            refreshVersion={manualRefreshVersion}
+            title="Orders"
+          />
         ) : null}
       </main>
     </div>

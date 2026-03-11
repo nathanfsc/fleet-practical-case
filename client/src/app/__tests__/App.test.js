@@ -3,6 +3,13 @@ import App from "../App";
 import { getDevices } from "../../features/devices/services/devicesService";
 import { getEmployees } from "../../features/employees/services/employeesService";
 import { getDashboardCounts } from "../services/dashboardService";
+import {
+  clearLocalStorage,
+  getLocalStorageItem,
+} from "../../shared/localStorageService";
+
+const mockCatalogTab = jest.fn();
+const mockOrdersTab = jest.fn();
 
 jest.mock("../../features/devices/services/devicesService", () => ({
   getDevices: jest.fn(),
@@ -34,13 +41,15 @@ jest.mock("../../features/devices/components/DeviceList", () => {
 });
 
 jest.mock("../../features/catalog/components/CatalogList", () => {
-  return function MockCatalogTab() {
+  return function MockCatalogTab(props) {
+    mockCatalogTab(props);
     return <div data-testid="catalog-tab">Catalog Tab</div>;
   };
 });
 
 jest.mock("../../features/orders/components/OrdersTab", () => {
-  return function MockOrdersTab() {
+  return function MockOrdersTab(props) {
+    mockOrdersTab(props);
     return <div data-testid="orders-tab">Orders Tab</div>;
   };
 });
@@ -48,7 +57,7 @@ jest.mock("../../features/orders/components/OrdersTab", () => {
 describe("App - navigation feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
     window.location.hash = "";
     getEmployees.mockResolvedValue([]);
     getDevices.mockResolvedValue([]);
@@ -80,7 +89,7 @@ describe("App - navigation feature", () => {
 
     expect(window.location.hash).toBe("#devices");
     await waitFor(() => {
-      expect(window.localStorage.getItem("fleet_active_tab")).toBe("devices");
+      expect(getLocalStorageItem("fleet_active_tab")).toBe("devices");
     });
     expect(getDashboardCounts).toHaveBeenCalledTimes(1);
   });
@@ -104,12 +113,50 @@ describe("App - navigation feature", () => {
 
     expect(await screen.findByTestId("orders-tab")).toBeInTheDocument();
   });
+
+  it("increments catalog refresh version on manual refresh when catalog is active", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Catalog" }));
+
+    await screen.findByTestId("catalog-tab");
+    expect(mockCatalogTab).toHaveBeenLastCalledWith(
+      expect.objectContaining({ refreshVersion: 0 }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Manual refresh" }));
+
+    await waitFor(() => {
+      expect(mockCatalogTab).toHaveBeenLastCalledWith(
+        expect.objectContaining({ refreshVersion: 1 }),
+      );
+    });
+  });
+
+  it("increments orders refresh version on manual refresh when orders is active", async () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Orders" }));
+
+    await screen.findByTestId("orders-tab");
+    expect(mockOrdersTab).toHaveBeenLastCalledWith(
+      expect.objectContaining({ refreshVersion: 0 }),
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Manual refresh" }));
+
+    await waitFor(() => {
+      expect(mockOrdersTab).toHaveBeenLastCalledWith(
+        expect.objectContaining({ refreshVersion: 1 }),
+      );
+    });
+  });
 });
 
 describe("App - data loading feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
     window.location.hash = "";
     getDashboardCounts.mockResolvedValue({
       totalEmployees: 0,
@@ -170,7 +217,7 @@ describe("App - data loading feature", () => {
 describe("App - dashboard and errors feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
     window.location.hash = "";
   });
 

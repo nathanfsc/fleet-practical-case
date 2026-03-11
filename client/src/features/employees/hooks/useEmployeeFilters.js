@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
+import {
+  getLocalStorageItem,
+  setLocalStorageItem,
+} from "../../../shared/localStorageService";
 
 const ROLE_FILTER_STORAGE_KEY = "fleet_role_filter";
 
 export function useEmployeeFilters(employees) {
   const [roleFilter, setRoleFilter] = useState(() => {
-    return window.localStorage.getItem(ROLE_FILTER_STORAGE_KEY) ?? "";
+    return getLocalStorageItem(ROLE_FILTER_STORAGE_KEY) ?? "";
   });
   const [employeeSearch, setEmployeeSearch] = useState("");
 
@@ -35,7 +39,7 @@ export function useEmployeeFilters(employees) {
   }, [employees, roleFilter, employeeSearch]);
 
   useEffect(() => {
-    window.localStorage.setItem(ROLE_FILTER_STORAGE_KEY, roleFilter);
+    setLocalStorageItem(ROLE_FILTER_STORAGE_KEY, roleFilter);
   }, [roleFilter]);
 
   return {

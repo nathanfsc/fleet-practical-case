@@ -5,9 +5,15 @@ import { useCatalogCart } from "../hooks/useCatalogCart";
 import { useCatalogProducts } from "../hooks/useCatalogProducts";
 import { createOrder } from "../../orders/services/ordersService";
 
-function CatalogTab({ cartTitle, onError, onStatusMessage, title }) {
+function CatalogTab({
+  cartTitle,
+  onError,
+  onStatusMessage,
+  refreshVersion,
+  title,
+}) {
   const [creatingOrder, setCreatingOrder] = useState(false);
-  const { products, refreshProducts } = useCatalogProducts();
+  const { products, refreshProducts } = useCatalogProducts({ refreshVersion });
   const {
     cartItems,
     clearCart,

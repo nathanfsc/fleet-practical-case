@@ -6,6 +6,7 @@ import {
   updateEmployee,
 } from "../../services/employeesService";
 import { EMPLOYEE_ROLE_OPTIONS } from "../../Employees.constant";
+import { clearLocalStorage } from "../../../../shared/localStorageService";
 
 const [SUPPORT, OPS, QA, PRODUCT_MANAGER, DESIGNER, DEVELOPER] =
   EMPLOYEE_ROLE_OPTIONS;
@@ -48,7 +49,7 @@ function setupEmployeesTab(overrides = {}) {
 describe("EmployeesTab - filtering feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
   });
 
   it("filters employees by role", () => {
@@ -77,7 +78,7 @@ describe("EmployeesTab - filtering feature", () => {
 describe("EmployeesTab - mutation feature", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    window.localStorage.clear();
+    clearLocalStorage();
     createEmployee.mockResolvedValue({ id: 10, name: "Charlie", role: QA });
     updateEmployee.mockResolvedValue({
       id: 1,
